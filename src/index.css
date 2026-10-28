@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 18px;
+    --radius-xl: 22px;
+    --radius-2xl: 28px;
+    
+    --color-background: #0F172A;
+    --color-foreground: #E2E8F0;
+    --color-card: #131D35;
+    --color-card-foreground: #E2E8F0;
+    --color-popover: #131D35;
+    --color-popover-foreground: #E2E8F0;
+    --color-primary: #4DFF80;
+    --color-primary-foreground: #0F172A;
+    --color-secondary: #1B2745;
+    --color-secondary-foreground: #E2E8F0;
+    --color-muted: #1B2745;
+    --color-muted-foreground: #94A3B8;
+    --color-accent: #1B2745;
+    --color-accent-foreground: #4DFF80;
+    --color-destructive: #FF6FD8;
+    --color-border: rgba(77, 255, 128, 0.15);
+    --color-input: #1B2745;
+    --color-ring: #4DFF80;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-[#FAF8F5] text-stone-800;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+/* Neo Maker Lab Glowing Utilities */
+.text-glow-cyan {
+  color: #4DFF80;
+  text-shadow: 0 0 10px rgba(77, 255, 128, 0.55), 0 0 20px rgba(77, 255, 128, 0.2);
+}
+
+.text-glow-purple {
+  color: #8B5CF6;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.55), 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+.text-glow-pink {
+  color: #FF6FD8;
+  text-shadow: 0 0 10px rgba(255, 111, 216, 0.55), 0 0 20px rgba(255, 111, 216, 0.2);
+}
+
+.text-glow-success {
+  color: #7CFF6B;
+  text-shadow: 0 0 10px rgba(124, 255, 107, 0.55);
+}
+
+.text-glow-highlight {
+  color: #FF9F43;
+  text-shadow: 0 0 10px rgba(255, 159, 67, 0.55);
+}
+
+/* Panel Glowing Borders */
+.border-glow-cyan {
+  border: 1px solid rgba(77, 255, 128, 0.25);
+  box-shadow: 0 0 20px rgba(77, 255, 128, 0.06);
+}
+
+.border-glow-purple {
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.06);
+}
+
+.border-glow-success {
+  border: 1px solid rgba(124, 255, 107, 0.25);
+  box-shadow: 0 0 20px rgba(124, 255, 107, 0.06);
+}
+
+.border-glow-highlight {
+  border: 1px solid rgba(255, 159, 67, 0.25);
+  box-shadow: 0 0 20px rgba(255, 159, 67, 0.06);
+}
+
+/* Pulsing Gradient Button classes */
+.btn-neon {
+  background: linear-gradient(135deg, #4DFF80, #8B5CF6);
+  color: #0F172A;
+  box-shadow: 0 4px 15px rgba(77, 255, 128, 0.35);
+  transition: all 0.3s ease;
+}
+
+.btn-neon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(77, 255, 128, 0.55), 0 0 35px rgba(139, 92, 246, 0.3);
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 12px rgba(77, 255, 128, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 25px rgba(77, 255, 128, 0.65), 0 0 40px rgba(139, 92, 246, 0.35);
+  }
+}
+
+.pulse-glow-shape {
+  animation: pulseGlow 3s infinite alternate ease-in-out;
+}
+
+.view-area-grid {
+  background-color: #0F172A;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #E6E1DA;
+  border-radius: 10px;
+  border: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #CDC6BA;
+}
+
+html {
+  font-size: 130%;
+}
+
+/* Override speech-bubble elements so they are excluded from the 1.3x scaling */
+.speech-bubble-p {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
+@media (min-width: 768px) {
+  .speech-bubble-p {
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
+}
+
+.speech-bubble-btn {
+  font-size: 10px !important;
+}
+
+.speech-bubble-badge {
+  font-size: 8px !important;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+

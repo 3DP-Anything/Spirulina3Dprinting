@@ -1,0 +1,146 @@
+key,en,cy
+appTitle,3D Paste Extruder,Allwthiwr Past 3D
+appSubTitle,CO2 Capture Project,Prosiect Dal CO2
+stepDesign,Design,Dylunio
+stepCalculate,Calculate,Cyfrifo
+step3DPrint,3D Print,Argraffu 3D
+deactivateAssistant,Deactivate Assistant,Analluogi Cynorthwyydd
+reactivateAssistant,Reactivate Assistant,Ailactifadu Cynorthwyydd
+settingsTitle,Settings,Gosodiadau
+secSize,Size,Maint
+lblWidth,Width,Lled
+lblHeight,Height,Uchder
+secShape,Shape,Siâp
+lblShapeType,Shape Type,Math o Siâp
+lblCornerRadius,Corner Radius,Radiws Cornel
+lblSidesLobes,Sides / Lobes,Ochr / Llabedau
+lblPolygon,Polygon,Polygon
+lblTaperAngle,Taper Angle,Ongl Meinhau
+lblTaperSplit,Taper Split Point,Pwynt Hollti Meinhau
+lblRotation,Rotation (Twist),Cylchdroi (Dirdro)
+lblTwistSplit,Twist Split Point,Pwynt Hollti Dirdro
+lblWaveType,Wave Type,Math o Don
+lblWaveAmplitude,Wave Amplitude,Ampled y Don
+lblWaveFrequency,Wave Frequency,Amledd y Don
+lblFlatSegments,Facet Divisions,Rhaniadau Ffasg
+lblGcodeTexture,G-Code Texture,Gwead G-Code
+lblTextureDivergence,Depth,Dyfnder
+lblTextureDepth,Depth,Dyfnder
+lblTextureFrequency,Frequency,Amlder
+lblTextureLayerInterval,Layer Interval,Cyfwng Haenau
+lblTextureWidth,Detour Width,Lled Dargyfeirio
+lblTextureAngleOffset,Layer Angle Offset,Ongl Wrthbwyso Haen
+btnApplyTexture,Apply Texture,Gosod Gwead
+descApplyTexture,Recalculate G-code with texture applied,Ailgyfrifo'r G-god gyda'r gwead wedi'i gymhwyso
+shapeTriangle,Triangle,Triongl
+shapeSquare,Square,Sgwâr
+shapePentagon,Pentagon,Pentagon
+shapeHexagon,Hexagon,Hecsagon
+shapeCircle,Circle,Cylch
+shapeStar,Star,Seren
+shapeFlower,Flower,Blodyn
+shapeShield,Shield,Tarian
+waveNormal,Normal,Normal
+waveSine,Sine,Sin
+waveTriangle,Triangle,Triongl
+waveSquare,Square,Sgwâr
+secTexture,Texture,Gwead
+lblTextureType,Texture Type,Math o Wead
+lblTextureScale,Texture Scale,Graddfa Gwead
+lblTextureDepth,Texture Depth,Dyfnder Gwead
+lblTextureFreq,Texture Frequency,Amledd Gwead
+lblTexturePhase,Texture Phase,Gwedd Gwead
+lblHorizWaves,Horizontal Waves,Tonnau Llorweddol
+lblVertWaves,Vertical Offset,Gwrthbwyso Sifft
+texNone,None,Dim
+texWave,Wave,Don
+texBrick,Brick,Bricsen
+texBumpy,Bumpy,Garw
+texDiamond,Diamond,Diemwnt
+texFaceted,Faceted,Fasgadeiddio
+secDeformations,Deformations,Anffurfiadau
+lblBulgeAmount,Bulge Amount,Maint y Chwydd
+lblBulgeSplit,Bulge Split Point,Pwynt Hollti Chwyddo
+secAppearance,Appearance,Gwedd
+lblShader,Shader Type,Math o Arlliwydd
+lblGlow,Glow Intensity,Dwysedd y Llewyrch
+lblNozzle,Show Print Nozzle,Dangos Ffroenell
+lblGrid,Show Grid Helper,Dangos Cynorthwyydd Grid
+shdClay,Clay,Clai
+shdGlossy,Glossy,Sgleiniog
+shdMetallic,Metallic,Metalaidd
+shdCarbon,Carbon Fiber,Ffibr Carbon
+shdTransparent,Transparent,Tryloyw
+printerSettingsHeader,3D Printer Settings,Gosodiadau Argraffydd 3D
+lblLayerHeight,Layer Height,Uchder Haen
+lblPrintSpeed,Print Speed,Cyflymder Argraffu
+lblNozzleTemp,Nozzle Temp,Temp Ffroenell
+lblBedTemp,Bed Temp,Temp Gwely
+lblRetractDist,Retraction Distance,Pellter Tynnu'n Ôl
+lblRetractSpeed,Retraction Speed,Cyflymder Tynnu'n Ôl
+defaultSizesHeader,Model Default Sizes,Meintiau Diofyn y Model
+lblDefaultThickness,Default Thickness,Trwch Diofyn
+lblDefaultHeight,Default Height,Uchder Diofyn
+appPreferencesHeader,App Preferences,Dewisiadau'r Ap
+lblShowTooltips,Show Tooltips,Dangos awgrymiadau offer
+lblSoundAlerts,Sound Alerts,Rhybuddion sain
+btnResetAll,Reset All,Ailosod Popeth
+btnApplySettings,Apply Settings,Gweithredu Gosodiadau
+btnExportSettings,Export Settings,Allforio Gosodiadau
+btnImportSettings,Import Settings,Mewnforio Gosodiadau
+gcodePlayerHeader,G-Code Player,Chwaraewr G-god
+lblActiveCommand,Active Command,Gorchymyn Gweithredol
+lblDescription,Description,Disgrifiad
+lblLines,Lines,Llinellau
+lblEstimatedTime,Estimated Print Time,Amser Argraffu Amcangyfrifedig
+lblFilamentLength,Filament Length,Hyd Ffilament
+lblTotalLayers,Total Layers,Cyfanswm Haenau
+btnRecalculate,Recalculate,Ailgyfrifo
+noActiveCommand,No active command,Dim gorchymyn gweithredol
+timeRemaining,Time Remaining,Amser sy'n weddill
+stlModalTitle,Export STL,Allforio STL
+stlThicknessPrompt,Do you want to apply thickness to the model surface?,Ydych chi am roi trwch i arwyneb y model?
+btnApplyThickness,Apply {val}mm,Gweithredu {val}mm
+btnSolidModel,No, Solid Model,"Na, Model Solid"
+namePromptTitle,3D Print Name,Enw'r Argraffiad 3D
+namePromptSub,Please enter your name for the file,Rhowch eich enw ar gyfer y ffeil
+btnDownloadGcode,Download G-Code,Llwytho i Lawr G-god
+btnCancel,Cancel,Canslo
+btnSave,Save,Cadw
+calculatingGcode,Calculating G-code...,Wrthi'n cyfrifo G-god...
+gcodePreview,G-code Preview,Rhagolwg G-god
+gcodePlayer,G-code player,Chwaraewr G-god
+activeCommand,Active Command,Gorchymyn Gweithredol
+layers,Layers,Haenau
+lineOfCode,Line of Code,Llinell o God
+buildTime,Build Time,Amser Adeiladu
+awaitingInstructions,Awaiting toolpath instruction...,Yn aros am gyfeiriad y llwybr offer...
+btnModel,Model,Model
+btnSTL,STL,STL
+btnPicture,Picture,Llun
+btnModelTitle,Save Model parameter file,Cadw ffeil paramedrau'r Model
+btnSTLTitle,Save STL file for 3D printing,Cadw ffeil STL ar gyfer argraffu 3D
+btnPictureTitle,Export high-resolution dynamic picture,Allforio llun deinamig cydraniad uchel
+modelInfoTitle,Model Info,Gwybodaeth Model
+modelSizes,Model sizes,Meintiau'r Model
+modelVolume,Model volume,Cyfaint y Model
+viewPreset,View,Golygu
+viewPreset3D,3D View,Golwg 3D
+viewPresetTop,Top View,Golwg Uchaf
+viewPresetFront,Front View,Golwg Blaen
+viewPresetRight,Right View,Golwg Dde
+playbackPath,Path,Llwybr
+playbackSpeed,Speed,Cyflymder
+speedSlow,Slow,Araf
+speedNormal,Normal,Arferol
+speedFast,Fast,Cyflymm
+speedSFast,Super Fast,Super Cyflym
+speedHyper,Hyper,Hyper
+skipButton,Skip,Hepgor
+finishButton,Finish,Gorffen
+backButton,Back,Yn ôl
+nextButton,Next,Nesaf
+WelcomeMessage,Welcome, I'm your 3D printing assistant, select your language,"Welcome, I'm your 3D printing assistant, select your language"
+lblCompensateWallShrinkage,Compensate Wall Shrinkage,Digolledu Crebachu Waliau
+descCompensateWallShrinkage,"Adds draft to cup side walls in G-code to make top bigger (3D model stays unchanged)","Ychwanegu ongl ddrafft i waliau ochr y cwpan mewn G-code (model 3D heb ei newid)"
+lblWallShrinkageDraft,Draft Angle (Shrinkage),Ongl Ddrafft (Crebachu)

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" fill="white">
+  <!-- Tail stroke shadow translation -->
+  <path 
+    d="M16,1 L1.5,10.5 C0.5,11.2 -0.2,12.5 0.1,13.8 C0.3,14.5 0.8,15.2 1.5,15.5 C4.0,16.5 12.0,15.0 16,13 Z" 
+    stroke="#000000" 
+    strokeWidth="2.5" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    shapeRendering="geometricPrecision"
+  />
+</svg>

@@ -1,0 +1,85 @@
+message_en,play order,Speech bubble message for section
+"Hello and welcome! Please, select your language:",automatic/on loading,Introduction
+"Using this app, you can: 1- Customise your own 3D model, 2- Prepare and visualise the instructions for your 3D Printer (G-Code file), 3- Export the G-Code file and 3D model for 3D Printing.",after previous,Introduction
+"First, click the (1) DESIGN button in the top bar and adjust parameters in the Shape, Texture, and Deformations boxes.",after previous,Introduction
+"Next, once satisfied with your design, click (2) CALCULATE to generate G-Code file. ",after previous,Introduction
+The G-CODE file contains all the instructions the 3D printer needs to follow to print your model.,after previous,Introduction
+You can visualise these instructions as an animation by pressing the Play button of the the G-Code player.,after previous,Introduction
+"Finally, Click (3) SAVE in the top bar, and select ""SAVE G-CODE"" to export your file.",after previous,Introduction
+"Navigation: You can zoom, and rotate the 3D model using your fingers (touchscreen) or mouse (Left and Middle buttons).",after previous,Introduction
+"Need more help? Drag and drop me onto any area of the screen, and I will provide information about the selected section.",after previous,Introduction
+,,
+"You can customise the 3D model by changing the parameters in the Shape, Texture, and Deformations boxes below.",on docking,Design Parameters and 1-Design button
+Drop me onto the boxes below for more information.,after previous,Design Parameters and 1-Design button
+"By modifying the ""SHAPE"" parameters, you can change the 3D model shape and adjust the number of sides.",on docking,Shape
+The base diametre and height of your model can be adjusted here.,on docking,Size
+"By modifying the ""TEXTURE"" parameters, you can add different textures to the 3D model.",on docking,Texture
+"By modifying the ""DEFORMATIONS"" parameters, you can apply different deformations to the 3D model.",on docking,Deformations
+"""APPEARANCE"" allows you to change the colour of the 3D model on the screen. ",on docking,Appearances
+The colour on the screen will not be the colour of your 3D printed model.,after previous,Appearances
+The colour of your 3D printed model will be the same as the colour of the paste used for printing it.,after previous,Appearances
+,,
+"To 3D print your model, the printer needs instructions specifying where to deposit material, at what speed, and in what quantity. ",on docking,G-Code Preview and 2- Calculate button
+"These instructions are stored in a G-Code file, where each line contains a separate command for the printer. ",after previous,G-Code Preview and 2- Calculate button
+You can use the interface below to visualise the G-Code instructions.,after previous,G-Code Preview and 2- Calculate button
+Drag and drop me onto the boxes below for more information.,after previous,
+"Use the ""G-CODE PLAYER"" buttons to play the G-Code instructions, either one by one or layer by layer.",on docking,G-Code Player
+"You can adjust the animation speed, or change the display from 2D (PATH) to 3D (3D MODEL).",after previous,G-Code Player
+"The ""PLAYBACK PROGRESS"" bars display information such as: ",on docking,Playback progress
+"Which line of the G-Code file is currently being displayed,",after previous,Playback progress
+"The estimated build time,",after previous,Playback progress
+The height level at which the material is being deposited.,after previous,Playback progress
+"The ""G-CODE COMMAND"" shows the the G-Code instruction displayed on the screen.",on docking,G-code Command
+"The ""G-CODE COMMAND DESCRIPTION"" describes inplain text form the G-Code instruction displayed on the screen.",on docking,G-code Command Description
+,,
+In the boxes below you can name your file and export it in various formats.,on docking,Save and Export and 3-Save button
+Drop me onto the boxes below for more information.,after previous,
+Give a name to your model here.,on docking,Name your model here
+"Save the G-Code instructions for 3D printing your model by clicking ""SAVE G-CODE""",on docking,G-CODE file for 3D printing
+"You can save your model to retrieve later into this App by clicking ""SAVE AS .CUP FILE""",on docking,3D model (Parametric .cup file)
+You can save your model as a 3D shape in STL format.,on docking,3D model (3D Printing .stl file)
+STL is a standardised format recognised by all 3D printers and most 3D modeling applications.,after previous,3D model (3D Printing .stl file)
+,after previous,3D model (3D Printing .stl file)
+Before saving your model as an STL file you must: ,after previous,3D model (3D Printing .stl file)
+1- Specify/adjust the wall thickness for your model,after previous,3D model (3D Printing .stl file)
+"2- Click the ""STL PREVIEW"" button to visualise the STL file (Optional).",after previous,3D model (3D Printing .stl file)
+"The resolution of the STL file can be changed using the ""STL QUALITY"" slider. ",after previous,3D model (3D Printing .stl file)
+Higher resolution files will produce smoother surfaces but result in larger STL files (more memory usage),after previous,3D model (3D Printing .stl file)
+"3- Click the ""SAVE AS A SOLID MODEL"" button.",after previous,3D model (3D Printing .stl file)
+Note: Saving your model as a surface models will result in a model with no thickness that cannot be 3D printed.,after previous,3D model (3D Printing .stl file)
+"You can take a picture (.JPG) of your 3D model to share with your friends or print on paper by clicking ""SAVE PICTURE""",on docking,Model Picture
+,,
+You can change the 3D Printer and Model Default settings in this menu.,on docking,Settings
+Make sure to click the “Apply Settings” button to apply and activate your changes.,after previous,Settings
+Note: All setting changes are temporary and will reset to the default settings when the app restarts.,after previous,Settings
+"To keep your custom settings, you can export them and re-import them in your next session.",after previous,Settings
+Drop me onto the boxes below for more information.,after previous,Settings
+"The ""3D PRINTER SETTINGS"" are parameters that are used to generate the G-Code file.",on docking,3D Printer Settings
+You can adjust the default settings to improve the quality of your 3D Prints.,after previous,3D Printer Settings
+Make sure to click the “Apply Settings” button to apply and activate your changes.,after previous,3D Printer Settings
+Note: All setting changes are temporary and will reset to the default settings when the app restarts.,after previous,3D Printer Settings
+"To keep your custom settings, you can export them and re-import them in your next session.",after previous,3D Printer Settings
+"Unlocking the ""MODEL SETTINGS"" will provide additional capabilities when designing your 3D model.",on docking,Model Settings
+,,
+Use Import Model to load previously created models.,on docking,Import model button
+,,
+Toggle App language between Welsh and English.,on docking,Language button
+,,
+Turn me ON/OFF depending on whether you want assistance.,on docking,Smiley button
+"Drag and drop me onto any area of the screen, and I will provide information about the selected section.",after previous,Smiley button
+,,
+"Use the view presets to quickly rotate the model to standard views such as Top, Front, Side, or Default 3D.",on docking,View Controls / Views
+Show or hide a 10 mm grid on the baseplate.,on docking,View Controls / Grid
+Show or Hide the 3D printer baseplate.,on docking,View Controls / Baseplate
+Show or hide the coordinate system used by the 3D printer to determine position in space.,on docking,View Controls /Axis
+"Show or hide the build volume, which represents the printer’s maximum printable area.",on docking,View Controls /Build Volume
+,,
+"This window displays the dimensions (in millimeters), and volume (in cubic centimeters) of your model.",on docking,Model info
+,,
+"To customise your 3D model, adjust the Shape, Texture, and Deformations settings in the Design Parameters Menu on the left.",on docking,3D view window/Design/Model
+,,
+This is the path represent the trajectory the 3D printer needs to follow to print your 3D model.,on docking,3D view window/Calculate/Path
+It is made up of a succession of small straight movements.,after previous,3D view window/Calculate/Path
+The instructions for each of these moves are stored as individual text lines within the G-code file.,after previous,3D view window/Calculate/Path
+"Each line of the G-Code file tells the printer: Where to move, how fast to go, and  how much material to deposit.",after previous,3D view window/Calculate/Path
+You can use the menu on the left to see and preview how the printer will follow these instructions.,after previous,3D view window/Calculate/Path

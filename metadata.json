@@ -1,0 +1,8 @@
+{
+  "name": "Clay Extruder 3D",
+  "description": "Generate 3D clay models (cups) and export Vase-Mode G-code for professional clay printers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
