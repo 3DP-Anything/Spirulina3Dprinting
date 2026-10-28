@@ -95,7 +95,7 @@ export const PASTE_RECIPE_PDF_FILE_NAME: string = 'Spirulina 3D Printing Paste R
  * 
  * Web path to access the recipe PDF. Automatically uses PASTE_RECIPE_PDF_FILE_NAME.
  */
-export const PASTE_RECIPE_PDF_URL: string = `/pdf/${encodeURIComponent(PASTE_RECIPE_PDF_FILE_NAME)}`;
+export const PASTE_RECIPE_PDF_URL: string = `${import.meta.env.BASE_URL}pdf/${encodeURIComponent(PASTE_RECIPE_PDF_FILE_NAME)}`;
 
 // ==============================================================================
 // SOCIAL & EXTERNAL CHANNELS CONFIGURATION
