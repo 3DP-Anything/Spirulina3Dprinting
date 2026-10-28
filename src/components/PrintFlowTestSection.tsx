@@ -73,17 +73,6 @@ export const PrintFlowTestSection: React.FC<PrintFlowTestSectionProps> = ({
       </div>
 
       <div className="mt-2 space-y-2">
-        {/* Description */}
-        <p className="text-[8.5px] text-stone-500 font-medium leading-relaxed">
-          {isTwoColumns
-            ? (language === 'cy'
-                ? `Allforio prawf llif gyda 2 golofn o 7 dolen: sail (${formatSpacing(baseSpacing)}mm bylchiad) a wal (${formatSpacing(wallSpacing)}mm bylchiad, amrywiad ±30%).`
-                : `Exports a flow calibration test with two columns of 7 loops: base flow (${formatSpacing(baseSpacing)}mm spacing) and wall flow (${formatSpacing(wallSpacing)}mm spacing, ±30% range).`)
-            : (language === 'cy'
-                ? `Allforio prawf llif gydag 1 golofn o 7 dolen (${formatSpacing(unifiedSpacing)}mm bylchiad llinell, amrywiad ±30%).`
-                : `Exports a flow calibration test with one column of 7 loops (${formatSpacing(unifiedSpacing)}mm line spacing, ±30% range).`)}
-        </p>
-
         {/* ========================================================================= */}
         {/* LOOP LINE SPACING SETTING BUTTONS */}
         {/* ========================================================================= */}
@@ -399,15 +388,15 @@ export const PrintFlowTestSection: React.FC<PrintFlowTestSectionProps> = ({
           <div className="grid grid-cols-2 gap-1.5">
             {/* Left Column (Base Flow) */}
             <div className="bg-white rounded-lg border border-teal-200 p-2 shadow-xs">
-              <div className="text-[8.5px] font-black uppercase text-teal-800 tracking-wider flex items-center justify-between pb-1 border-b border-teal-100">
+              <div className="text-[9px] font-black uppercase text-teal-800 tracking-wider flex items-center justify-between pb-1 border-b border-teal-100">
                 <span>{language === 'cy' ? 'Sail' : 'Base'}</span>
-                <span className="text-teal-600 font-mono">{baseFlow}%</span>
+                <span className="text-teal-600 font-mono text-[9px]">{baseFlow}%</span>
               </div>
-              <div className="mt-1 space-y-0.5 text-[7.5px] font-mono text-stone-600">
+              <div className="mt-1 space-y-0.5 text-[9px] font-mono leading-tight text-stone-600">
                 {leftColumn.map((l) => (
                   <div
                     key={l.loopNumber}
-                    className={`px-1 py-0.5 rounded ${
+                    className={`px-1 py-0.5 rounded leading-tight ${
                       l.loopNumber === 4 ? 'bg-amber-100/70 text-amber-900 font-bold' : ''
                     }`}
                   >
@@ -419,15 +408,15 @@ export const PrintFlowTestSection: React.FC<PrintFlowTestSectionProps> = ({
 
             {/* Right Column (Wall Flow) */}
             <div className="bg-white rounded-lg border border-cyan-200 p-2 shadow-xs">
-              <div className="text-[8.5px] font-black uppercase text-cyan-800 tracking-wider flex items-center justify-between pb-1 border-b border-cyan-100">
+              <div className="text-[9px] font-black uppercase text-cyan-800 tracking-wider flex items-center justify-between pb-1 border-b border-cyan-100">
                 <span>{language === 'cy' ? 'Wal' : 'Wall'}</span>
-                <span className="text-cyan-600 font-mono">{wallFlow}%</span>
+                <span className="text-cyan-600 font-mono text-[9px]">{wallFlow}%</span>
               </div>
-              <div className="mt-1 space-y-0.5 text-[7.5px] font-mono text-stone-600">
+              <div className="mt-1 space-y-0.5 text-[9px] font-mono leading-tight text-stone-600">
                 {rightColumn.map((l) => (
                   <div
                     key={l.loopNumber}
-                    className={`px-1 py-0.5 rounded ${
+                    className={`px-1 py-0.5 rounded leading-tight ${
                       l.loopNumber === 4 ? 'bg-amber-100/70 text-amber-900 font-bold' : ''
                     }`}
                   >
@@ -440,15 +429,15 @@ export const PrintFlowTestSection: React.FC<PrintFlowTestSectionProps> = ({
         ) : (
           /* Single Column (Unified Flow) */
           <div className="bg-white rounded-lg border border-teal-200 p-2 shadow-xs">
-            <div className="text-[8.5px] font-black uppercase text-teal-800 tracking-wider flex items-center justify-between pb-1 border-b border-teal-100">
+            <div className="text-[9px] font-black uppercase text-teal-800 tracking-wider flex items-center justify-between pb-1 border-b border-teal-100">
               <span>{language === 'cy' ? 'Llif Unedig' : 'Unified Flow'}</span>
-              <span className="text-teal-600 font-mono">{unifiedFlow}%</span>
+              <span className="text-teal-600 font-mono text-[9px]">{unifiedFlow}%</span>
             </div>
-            <div className="mt-1 space-y-0.5 text-[7.5px] font-mono text-stone-600">
+            <div className="mt-1 space-y-0.5 text-[9px] font-mono leading-tight text-stone-600">
               {leftColumn.map((l) => (
                 <div
                   key={l.loopNumber}
-                  className={`px-1.5 py-0.5 rounded ${
+                  className={`px-1.5 py-0.5 rounded leading-tight ${
                     l.loopNumber === 4 ? 'bg-amber-100/70 text-amber-900 font-bold' : ''
                   }`}
                 >
@@ -458,38 +447,6 @@ export const PrintFlowTestSection: React.FC<PrintFlowTestSectionProps> = ({
             </div>
           </div>
         )}
-
-        {/* Technical Specs Summary */}
-        <div className="bg-white rounded-lg border border-stone-200 p-2 text-[8px] space-y-1 font-mono text-stone-600">
-          <div className="flex justify-between">
-            <span className="text-stone-400 uppercase font-sans font-bold">{language === 'cy' ? 'Bwlch Fertigol' : 'Vertical Spacing'}:</span>
-            <span className="font-bold text-stone-800">10 mm ({language === 'cy' ? 'rhwng llinellau canol' : 'between center-lines'})</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-stone-400 uppercase font-sans font-bold">{language === 'cy' ? 'Lled Dolen (Bwlch)' : 'Loop Line Spacing'}:</span>
-            <span className="font-bold text-stone-800">
-              {isTwoColumns
-                ? `${language === 'cy' ? 'Sail' : 'Base'}: ${formatSpacing(baseSpacing)}mm | ${language === 'cy' ? 'Wal' : 'Wall'}: ${formatSpacing(wallSpacing)}mm`
-                : `${formatSpacing(unifiedSpacing)}mm`}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-stone-400 uppercase font-sans font-bold">{language === 'cy' ? 'Radiws Tro 180°' : '180° Turn Radius'}:</span>
-            <span className="font-bold text-stone-800">
-              {isTwoColumns
-                ? `${language === 'cy' ? 'Sail' : 'Base'}: ${(baseSpacing / 2).toFixed(1)}mm | ${language === 'cy' ? 'Wal' : 'Wall'}: ${(wallSpacing / 2).toFixed(1)}mm`
-                : `${(unifiedSpacing / 2).toFixed(1)}mm`}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-stone-400 uppercase font-sans font-bold">{language === 'cy' ? 'Hyd Dolenni' : 'Loop Lengths'}:</span>
-            <span className="font-bold text-stone-800">25 mm ({language === 'cy' ? 'Canol' : 'Center'}: 30 mm)</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-stone-400 uppercase font-sans font-bold">{language === 'cy' ? 'Cyflymder / E' : 'Speed / E-Const'}:</span>
-            <span className="font-bold text-stone-800">{speed} mm/s | {((settings.eConstant ?? DEFAULT_PRINTER_SETTINGS.eConstant)).toFixed(6)}</span>
-          </div>
-        </div>
 
         {/* Export Button */}
         <button
