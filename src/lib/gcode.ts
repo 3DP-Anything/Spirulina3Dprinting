@@ -494,6 +494,10 @@ export async function generateGCode(
   const layerHeight = settings.layerHeight ?? DEFAULT_PRINTER_SETTINGS.layerHeight;
   const extrusionMultiplier = settings.extrusionMultiplier ?? DEFAULT_PRINTER_SETTINGS.extrusionMultiplier;
   const feedrate = (settings.speed ?? DEFAULT_PRINTER_SETTINGS.speed) * 60;
+  const approachSpeed = settings.approachSpeed ?? 20;
+  const approachFeedrate = Math.round(approachSpeed * 60); // 1200 mm/min (20 mm/s)
+  const exitSpeed = settings.exitSpeed ?? 20;
+  const exitFeedrate = Math.round(exitSpeed * 60); // 1200 mm/min (20 mm/s)
   const baseLayers = settings.baseLayers ?? DEFAULT_PRINTER_SETTINGS.baseLayers;
   const wallCount = settings.wallCount ?? DEFAULT_PRINTER_SETTINGS.wallCount;
   const vaseModeActive = wallCount === 1 && settings.vaseMode !== false;
@@ -578,7 +582,7 @@ export async function generateGCode(
   gcode.push(`; G-code Nozzle Depth Texture: ${isGcodeTextureActive ? 'ENABLED' : 'DISABLED'}`);
   if (isGcodeTextureActive) {
     const depthVal = rawParams.gcodeTextureDepth ?? rawParams.gcodeTextureDivergence ?? 2.0;
-    const freqVal = getNearest360Divisor(rawParams.gcodeTextureFrequency ?? 10.0, 10);
+    const freqVal = getNearest360Divisor(rawParams.gcodeTextureFrequency ?? 30.0, 10);
     gcode.push(`;   Texture Depth: ${depthVal.toFixed(2)} mm (max 5.0 mm)`);
     gcode.push(`;   Texture Frequency: ${freqVal}° (exact divisor of 360)`);
     gcode.push(`;   Texture Layer Interval: every ${rawParams.gcodeTextureLayerInterval ?? 5} layers`);
@@ -594,6 +598,8 @@ export async function generateGCode(
   gcode.push(`; Layer Height: ${layerHeight.toFixed(2)} mm`);
   gcode.push(`; Line Distance / Extrusion Width: ${extrusionWidth.toFixed(2)} mm`);
   gcode.push(`; Print Speed: ${settings.speed ?? 10} mm/s`);
+  gcode.push(`; Approach Speed: ${approachSpeed} mm/s (F${approachFeedrate})`);
+  gcode.push(`; Exit Speed: ${exitSpeed} mm/s (F${exitFeedrate})`);
   gcode.push(`; Extrusion Multiplier: ${extrusionMultiplier.toFixed(2)}`);
   gcode.push(`; Flow: ${defaultFlow}%`);
   gcode.push(`; Separate Flow: ${separateFlow ? `ON (Base: ${baseFlow}% | Walls: ${wallFlow}%)` : 'OFF'}`);
@@ -613,7 +619,11 @@ export async function generateGCode(
   const resolvedStartGcode = (settings.startGcode || '')
     .replace(/{material_bed_temperature_layer_0}/g, '0')
     .replace(/{material_print_temperature_layer_0}/g, '0')
-    .replace(/{machine_depth}/g, '250');
+    .replace(/{machine_depth}/g, '250')
+    .replace(/{approach_speed}/g, String(approachSpeed))
+    .replace(/{approach_feedrate}/g, String(approachFeedrate))
+    .replace(/{exit_speed}/g, String(exitSpeed))
+    .replace(/{exit_feedrate}/g, String(exitFeedrate));
   gcode.push(resolvedStartGcode);
   
   let currentE = 0;
@@ -702,7 +712,7 @@ export async function generateGCode(
       gcode.push(`; --- Skirt (1 line, ${skirtDistance}mm offset) ---`);
       const startP = skirtPoints[0];
       if (isFirstMove) {
-        gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${skirtZ.toFixed(3)} F${feedrate}`);
+        gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${skirtZ.toFixed(3)} F${approachFeedrate}`);
         isFirstMove = false;
       } else {
         gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${skirtZ.toFixed(3)}`);
@@ -759,7 +769,7 @@ export async function generateGCode(
 
       const startP = points[0];
       if (isFirstMove) {
-        gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${z.toFixed(3)} F${feedrate}`);
+        gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${z.toFixed(3)} F${approachFeedrate}`);
         isFirstMove = false;
         isFirstBaseMove = false;
       } else if (isFirstBaseMove) {
@@ -801,7 +811,7 @@ export async function generateGCode(
     // G-code Nozzle Depth Texture settings
     const textureEnabled = !!params.gcodeTextureEnabled;
     const textureDivergence = Math.max(0.1, Math.min(5.0, params.gcodeTextureDepth ?? params.gcodeTextureDivergence ?? 2.0));
-    const textureFrequency = getNearest360Divisor(params.gcodeTextureFrequency ?? 10.0, 10);
+    const textureFrequency = getNearest360Divisor(params.gcodeTextureFrequency ?? 30.0, 10);
     const textureLayerInterval = Math.max(1, Math.round(params.gcodeTextureLayerInterval ?? 5));
     const textureWidth = params.gcodeTextureWidth ?? 1.0;
     const textureAngleOffsetDeg = params.gcodeTextureAngleOffset ?? 0.0;
@@ -833,7 +843,7 @@ export async function generateGCode(
       const firstWallStart = new THREE.Vector3(resampledCube[0].x, resampledCube[0].y, zStart);
 
       if (isFirstMove) {
-        gcode.push(`G0 X${(firstWallStart.x + 125).toFixed(3)} Y${(firstWallStart.y + 125).toFixed(3)} Z${firstWallStart.z.toFixed(3)} F${feedrate}`);
+        gcode.push(`G0 X${(firstWallStart.x + 125).toFixed(3)} Y${(firstWallStart.y + 125).toFixed(3)} Z${firstWallStart.z.toFixed(3)} F${approachFeedrate}`);
         isFirstMove = false;
         isFirstWallMove = false;
       } else if (isFirstWallMove) {
@@ -950,7 +960,7 @@ export async function generateGCode(
 
           const startP = points[0];
           if (isFirstMove) {
-            gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${layerZ.toFixed(3)} F${feedrate}`);
+            gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${layerZ.toFixed(3)} F${approachFeedrate}`);
             isFirstMove = false;
             isFirstWallMove = false;
           } else if (isFirstWallMove) {
@@ -1013,7 +1023,7 @@ export async function generateGCode(
 
       const startP = points[0];
       if (isFirstMove) {
-        gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${z.toFixed(3)} F${feedrate}`);
+        gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${z.toFixed(3)} F${approachFeedrate}`);
         isFirstMove = false;
         isFirstBaseMove = false;
       } else if (isFirstBaseMove) {
@@ -1055,7 +1065,7 @@ export async function generateGCode(
     // G-code Nozzle Depth Texture settings
     const textureEnabled = !!params.gcodeTextureEnabled;
     const textureDivergence = Math.max(0.1, Math.min(5.0, params.gcodeTextureDepth ?? params.gcodeTextureDivergence ?? 2.0));
-    const textureFrequency = getNearest360Divisor(params.gcodeTextureFrequency ?? 10.0, 10);
+    const textureFrequency = getNearest360Divisor(params.gcodeTextureFrequency ?? 30.0, 10);
     const textureLayerInterval = Math.max(1, Math.round(params.gcodeTextureLayerInterval ?? 5));
     const textureWidth = params.gcodeTextureWidth ?? 1.0;
     const textureAngleOffsetDeg = params.gcodeTextureAngleOffset ?? 0.0;
@@ -1092,9 +1102,12 @@ export async function generateGCode(
         initialLoop = startLoopAtFront(initialLoop);
         const firstWallStart = new THREE.Vector3(initialLoop[0].x, initialLoop[0].y, zStart);
 
-        if (isFirstMove || isFirstWallMove || !lastPrintedPoint) {
-          gcode.push(`G0 X${(firstWallStart.x + 125).toFixed(3)} Y${(firstWallStart.y + 125).toFixed(3)} Z${firstWallStart.z.toFixed(3)} F${feedrate}`);
+        if (isFirstMove) {
+          gcode.push(`G0 X${(firstWallStart.x + 125).toFixed(3)} Y${(firstWallStart.y + 125).toFixed(3)} Z${firstWallStart.z.toFixed(3)} F${approachFeedrate}`);
           isFirstMove = false;
+          isFirstWallMove = false;
+        } else if (isFirstWallMove || !lastPrintedPoint) {
+          gcode.push(`G0 X${(firstWallStart.x + 125).toFixed(3)} Y${(firstWallStart.y + 125).toFixed(3)} Z${firstWallStart.z.toFixed(3)} F${feedrate}`);
           isFirstWallMove = false;
         } else {
           gcode.push(`G0 X${(firstWallStart.x + 125).toFixed(3)} Y${(firstWallStart.y + 125).toFixed(3)} Z${firstWallStart.z.toFixed(3)}`);
@@ -1238,7 +1251,7 @@ export async function generateGCode(
           // Move to start of wall centered on bed
           const startP = points[0];
           if (isFirstMove) {
-            gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${startP.z.toFixed(3)} F${feedrate}`);
+            gcode.push(`G0 X${(startP.x + 125).toFixed(3)} Y${(startP.y + 125).toFixed(3)} Z${startP.z.toFixed(3)} F${approachFeedrate}`);
             isFirstMove = false;
             isFirstWallMove = false;
           } else if (isFirstWallMove) {
@@ -1288,14 +1301,18 @@ export async function generateGCode(
   if (retractionDistance > 0) {
     currentE -= retractionDistance;
     gcode.push(`; End retraction`);
-    gcode.push(`G1 E${currentE.toFixed(5)} F${feedrate}`);
+    gcode.push(`G1 E${currentE.toFixed(5)} F${exitFeedrate}`);
   }
 
   // End G-code with resolved templates
   const resolvedEndGcode = (settings.endGcode || '')
     .replace(/{material_bed_temperature_layer_0}/g, '0')
     .replace(/{material_print_temperature_layer_0}/g, '0')
-    .replace(/{machine_depth}/g, '250');
+    .replace(/{machine_depth}/g, '250')
+    .replace(/{approach_speed}/g, String(approachSpeed))
+    .replace(/{approach_feedrate}/g, String(approachFeedrate))
+    .replace(/{exit_speed}/g, String(exitSpeed))
+    .replace(/{exit_feedrate}/g, String(exitFeedrate));
   gcode.push(resolvedEndGcode);
   
   if (onProgress) onProgress(100);

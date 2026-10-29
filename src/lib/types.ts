@@ -40,6 +40,9 @@ export interface PrinterSettings {
   testFlowBaseLineDistance?: number; // Loop line spacing in mm for base flow test loops (default: depositionWidth)
   testFlowWallLineDistance?: number; // Loop line spacing in mm for wall flow test loops (default: depositionWidth)
   testFlowLineDistance?: number; // Loop line spacing in mm for unified flow test loops (default: depositionWidth)
+  testFlowYOffset?: number; // Vertical shift in mm along Y axis for flow test (default: +5mm)
+  approachSpeed?: number; // Approach speed at start of build in mm/s (default: 20)
+  exitSpeed?: number; // Exit speed at end of build in mm/s (default: 20)
   autoNameModel?: boolean; // Option in model settings to name the model automatically (default: true)
   modelName?: string; // Model name for exported file
 }
@@ -120,7 +123,7 @@ export interface ModelParams {
   gcodeTextureEnabled?: boolean;
   gcodeTextureDivergence?: number; // Depth in mm (max 5mm, default 2mm)
   gcodeTextureDepth?: number; // Depth alias in mm (max 5mm)
-  gcodeTextureFrequency?: number; // degrees (exact divisor of 360, min 10 degrees, default 10 degrees)
+  gcodeTextureFrequency?: number; // degrees (exact divisor of 360, min 10 degrees, default 30 degrees)
   gcodeTextureLayerInterval?: number; // every X layers (default 5 layers)
   gcodeTextureWidth?: number; // detour width along path in mm (default 1mm)
   gcodeTextureAngleOffset?: number; // degrees to rotate texture on each subsequent textured layer (default 0)

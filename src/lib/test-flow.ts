@@ -1,5 +1,5 @@
 import { PrinterSettings } from './types';
-import { TEST_FLOW_BASE_GAP_MULTIPLIER, TEST_FLOW_WALL_GAP_MULTIPLIER, DEFAULT_PRINTER_SETTINGS } from '../parameters/index';
+import { TEST_FLOW_BASE_GAP_MULTIPLIER, TEST_FLOW_WALL_GAP_MULTIPLIER, TEST_FLOW_Y_OFFSET, DEFAULT_PRINTER_SETTINGS } from '../parameters/index';
 
 export interface TestFlowLoopInfo {
   loopNumber: number; // 1 to 7
@@ -26,6 +26,7 @@ export interface TestFlowLoopInfo {
  * - If separateFlow is off: 1 single column of 7 loops testing unified flow (flow -30% to +30%), distance between lines = base gap multiplier
  * - Vertical spacing between loop center-lines: 10 mm
  * - Total length of each loop: 25 mm (except Loop 4 at column center which is 30 mm)
+ * - Shifted +5mm in Y: loops are centered around Y = 130mm (Loop 1 top at Y = 160mm, Loop 7 at Y = 100mm)
  */
 export function getTestFlowLoops(
   settings: PrinterSettings,
@@ -39,6 +40,7 @@ export function getTestFlowLoops(
     baseLineDistance?: number;
     wallLineDistance?: number;
     lineDistance?: number;
+    yOffset?: number;
   }
 ): { leftColumn: TestFlowLoopInfo[]; rightColumn: TestFlowLoopInfo[] } {
   const separateFlow = overrides?.separateFlow !== undefined ? overrides.separateFlow : (settings.separateFlow !== undefined ? !!settings.separateFlow : !!DEFAULT_PRINTER_SETTINGS.separateFlow);
@@ -67,9 +69,10 @@ export function getTestFlowLoops(
 
   const numLoops = 7;
   const loopSpacing = 10; // 10mm vertical spacing between center-lines
-  const bedCenterY = 125; // 250x250 bed center
+  const yOffset = overrides?.yOffset ?? settings.testFlowYOffset ?? TEST_FLOW_Y_OFFSET ?? 5.0;
+  const bedCenterY = 125 + yOffset; // 250x250 bed center shifted +5mm in Y (130mm)
   const totalSpanY = (numLoops - 1) * loopSpacing; // 60mm
-  const topY = bedCenterY + totalSpanY / 2; // Loop 1 at Y = 155mm, Loop 7 at Y = 95mm
+  const topY = bedCenterY + totalSpanY / 2; // Loop 1 at Y = 160mm, Loop 7 at Y = 100mm (shifted +5mm in Y)
 
   const deltas = [-30, -20, -10, 0, 10, 20, 30];
 
@@ -183,11 +186,16 @@ export function generateTestFlowGCode(
     separateFlow?: boolean;
     baseGapMultiplier?: number;
     wallGapMultiplier?: number;
+    yOffset?: number;
   }
 ): string {
   const speed = settings.speed ?? DEFAULT_PRINTER_SETTINGS.speed; // mm/s
   const feedrate = Math.round(speed * 60); // mm/min
-  const travelFeedrate = 3000; // mm/min
+  const approachSpeed = settings.approachSpeed ?? 20; // mm/s
+  const approachFeedrate = Math.round(approachSpeed * 60); // 1200 mm/min (20 mm/s)
+  const exitSpeed = settings.exitSpeed ?? 20; // mm/s
+  const exitFeedrate = Math.round(exitSpeed * 60); // 1200 mm/min (20 mm/s)
+  const travelFeedrate = approachFeedrate; // 1200 mm/min (20 mm/s)
 
   const nozzleDiameter = Math.max(0.2, settings.depositionWidth ?? settings.extrusionWidth ?? settings.nozzleDiameter ?? DEFAULT_PRINTER_SETTINGS.nozzleDiameter);
   const pistonDiameter = settings.pistonDiameter ?? DEFAULT_PRINTER_SETTINGS.pistonDiameter ?? 45.0;
@@ -195,6 +203,7 @@ export function generateTestFlowGCode(
   const eConstant = settings.eConstant ?? defaultE;
   const layerZ = settings.layerHeight ?? DEFAULT_PRINTER_SETTINGS.layerHeight;
   const retractionDistance = settings.retractionDistance ?? DEFAULT_PRINTER_SETTINGS.retractionDistance;
+  const yShift = overrides?.yOffset ?? settings.testFlowYOffset ?? TEST_FLOW_Y_OFFSET ?? 5.0;
 
   const { leftColumn, rightColumn } = getTestFlowLoops(settings, overrides);
   const isTwoColumns = rightColumn.length > 0;
@@ -210,9 +219,12 @@ export function generateTestFlowGCode(
   gcode.push('; PRINT FLOW CALIBRATION TEST G-CODE');
   gcode.push('; ==============================================================================');
   gcode.push(`; Print Speed: ${speed} mm/s (F${feedrate})`);
+  gcode.push(`; Approach Speed: ${approachSpeed} mm/s (F${approachFeedrate})`);
+  gcode.push(`; Exit Speed: ${exitSpeed} mm/s (F${exitFeedrate})`);
   gcode.push(`; E-Constant: ${eConstant}`);
   gcode.push(`; Layer Height: ${layerZ} mm`);
   gcode.push(`; Deposition Width / Nozzle: ${nozzleDiameter} mm`);
+  gcode.push(`; Y-Axis Shift: ${yShift >= 0 ? `+${yShift}` : yShift} mm (Bed Center Y = ${(125 + yShift).toFixed(1)} mm)`);
   if (isTwoColumns) {
     gcode.push(`; Columns: 2 Columns (Left: Base Flow [${lineDistanceBase.toFixed(2)}mm loop line spacing] | Right: Wall Flow [${lineDistanceWall.toFixed(2)}mm loop line spacing])`);
     gcode.push(`; 180° Turn Radius: Left (Base Flow) = ${rBase.toFixed(2)} mm | Right (Wall Flow) = ${rWall.toFixed(2)} mm`);
@@ -230,7 +242,11 @@ export function generateTestFlowGCode(
   const resolvedStartGcode = (settings.startGcode || '')
     .replace(/{material_bed_temperature_layer_0}/g, '0')
     .replace(/{material_print_temperature_layer_0}/g, '0')
-    .replace(/{machine_depth}/g, '250');
+    .replace(/{machine_depth}/g, '250')
+    .replace(/{approach_speed}/g, String(approachSpeed))
+    .replace(/{approach_feedrate}/g, String(approachFeedrate))
+    .replace(/{exit_speed}/g, String(exitSpeed))
+    .replace(/{exit_feedrate}/g, String(exitFeedrate));
   if (resolvedStartGcode.trim()) {
     gcode.push(resolvedStartGcode);
     gcode.push('');
@@ -326,7 +342,7 @@ export function generateTestFlowGCode(
     // Retract between loops if retraction is enabled
     if (retractionDistance > 0) {
       currentE -= retractionDistance;
-      gcode.push(`G1 E${currentE.toFixed(5)} F3000 ; Retract`);
+      gcode.push(`G1 E${currentE.toFixed(5)} F${exitFeedrate} ; Retract`);
       currentE += retractionDistance; // will be unretracted at next extrude move
     }
   }
@@ -368,7 +384,13 @@ export function generateTestFlowGCode(
 
   // End G-code
   const resolvedEndGcode = (settings.endGcode || '')
-    .replace(/{machine_depth}/g, '250');
+    .replace(/{material_bed_temperature_layer_0}/g, '0')
+    .replace(/{material_print_temperature_layer_0}/g, '0')
+    .replace(/{machine_depth}/g, '250')
+    .replace(/{approach_speed}/g, String(approachSpeed))
+    .replace(/{approach_feedrate}/g, String(approachFeedrate))
+    .replace(/{exit_speed}/g, String(exitSpeed))
+    .replace(/{exit_feedrate}/g, String(exitFeedrate));
   if (resolvedEndGcode.trim()) {
     gcode.push(resolvedEndGcode);
   }

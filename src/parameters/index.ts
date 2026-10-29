@@ -77,6 +77,14 @@ export const TEST_FLOW_BASE_GAP_MULTIPLIER: number = 1.0;
  */
 export const TEST_FLOW_WALL_GAP_MULTIPLIER: number = 1.0;
 
+/**
+ * TEST_FLOW_Y_OFFSET
+ * 
+ * Vertical shift in millimeters along the Y axis applied to all lines and loops
+ * of the print flow test (default: +5.0 mm shifts all lines +5mm in Y).
+ */
+export const TEST_FLOW_Y_OFFSET: number = 5.0;
+
 // ==============================================================================
 // RECIPE & DOCUMENT CONFIGURATION
 // ==============================================================================
@@ -95,7 +103,7 @@ export const PASTE_RECIPE_PDF_FILE_NAME: string = 'Spirulina 3D Printing Paste R
  * 
  * Web path to access the recipe PDF. Automatically uses PASTE_RECIPE_PDF_FILE_NAME.
  */
-export const PASTE_RECIPE_PDF_URL: string = `${import.meta.env.BASE_URL}pdf/${encodeURIComponent(PASTE_RECIPE_PDF_FILE_NAME)}`;
+export const PASTE_RECIPE_PDF_URL: string = `${(import.meta as any)?.env?.BASE_URL || '/'}pdf/${encodeURIComponent(PASTE_RECIPE_PDF_FILE_NAME)}`;
 
 // ==============================================================================
 // SOCIAL & EXTERNAL CHANNELS CONFIGURATION
@@ -607,7 +615,7 @@ export const MODEL_PARAMETERS_REGISTRY: Record<string, ParameterDefinition> = {
     key: 'gcodeTextureFrequency',
     name: 'G-Code Texture Angular Frequency',
     category: 'surface_texture',
-    defaultValue: 10,
+    defaultValue: 30,
     unit: 'deg',
     description: 'Angular step in degrees between diversion pulses (must divide 360° evenly, min 10°).',
     status: 'unlocked',
@@ -796,12 +804,36 @@ export const PRINTER_SETTINGS_REGISTRY: Record<string, ParameterDefinition> = {
     key: 'speed',
     name: 'Print Speed',
     category: 'printer_speeds',
-    defaultValue: 10,
+    defaultValue: 8,
     unit: 'mm/s',
     description: 'Toolpath travel and extrusion feed speed in mm/s.',
     status: 'unlocked',
     min: 1,
     max: 30,
+    step: 1,
+  },
+  approachSpeed: {
+    key: 'approachSpeed',
+    name: 'Approach Speed',
+    category: 'printer_speeds',
+    defaultValue: 20,
+    unit: 'mm/s',
+    description: 'Approach travel speed at the start of the build in mm/s (F1200).',
+    status: 'unlocked',
+    min: 1,
+    max: 50,
+    step: 1,
+  },
+  exitSpeed: {
+    key: 'exitSpeed',
+    name: 'Exit Speed',
+    category: 'printer_speeds',
+    defaultValue: 20,
+    unit: 'mm/s',
+    description: 'Exit and parking travel speed at the end of the build in mm/s (F1200).',
+    status: 'unlocked',
+    min: 1,
+    max: 50,
     step: 1,
   },
   layerHeight: {
@@ -852,7 +884,7 @@ export const PRINTER_SETTINGS_REGISTRY: Record<string, ParameterDefinition> = {
     key: 'wallFlow',
     name: 'Walls Flow',
     category: 'printer_extrusion',
-    defaultValue: 155,
+    defaultValue: 45,
     unit: '%',
     description: 'Extrusion flow percentage for cup wall loops (0 to 200%).',
     status: 'unlocked',
@@ -864,7 +896,7 @@ export const PRINTER_SETTINGS_REGISTRY: Record<string, ParameterDefinition> = {
     key: 'baseFlow',
     name: 'Base Flow',
     category: 'printer_extrusion',
-    defaultValue: 150,
+    defaultValue: 45,
     unit: '%',
     description: 'Extrusion flow percentage for bottom base layers (0 to 200%).',
     status: 'unlocked',
@@ -876,7 +908,7 @@ export const PRINTER_SETTINGS_REGISTRY: Record<string, ParameterDefinition> = {
     key: 'flow',
     name: 'Uniform Flow',
     category: 'printer_extrusion',
-    defaultValue: 150,
+    defaultValue: 45,
     unit: '%',
     description: 'Uniform flow rate percentage when separate flow is disabled (0 to 300%).',
     status: 'unlocked',
@@ -964,7 +996,7 @@ export const PRINTER_SETTINGS_REGISTRY: Record<string, ParameterDefinition> = {
     key: 'skirtDistance',
     name: 'Skirt Distance',
     category: 'printer_geometry',
-    defaultValue: 8,
+    defaultValue: 10,
     unit: 'mm',
     description: 'Offset distance in mm of the skirt line from the model boundary.',
     status: 'unlocked',
@@ -1130,6 +1162,15 @@ export const PRINTER_SETTINGS_REGISTRY: Record<string, ParameterDefinition> = {
     max: 5.0,
     step: 0.1,
   },
+  testFlowYOffset: {
+    key: 'testFlowYOffset',
+    name: 'Test Flow Y Offset',
+    category: 'printer_gcode',
+    defaultValue: TEST_FLOW_Y_OFFSET,
+    unit: 'mm',
+    description: 'Vertical shift in millimeters along the Y axis for all lines of the flow test.',
+    status: 'unlocked',
+  },
   autoNameModel: {
     key: 'autoNameModel',
     name: 'Auto-Generate Model Name',
@@ -1152,19 +1193,19 @@ G28 ; Home all axis
 ; Uncomment the line below to enable ABL Mesh probing
 ;G29 ; Probe bed mesh for ABL
 ; For best results do not run nozzle heater while performing ABL
-G1 Z5.0 ; Raise nozzle to prevent scratching of heat bed
-G1 X0 Y0 ; Move nozzle to Home before heating
+G1 Z5.0 F1200 ; Raise nozzle to prevent scratching of heat bed (20mm/s approach speed)
+G1 X0 Y0 F1200 ; Move nozzle to Home before heating (20mm/s approach speed)
 M109 S{material_print_temperature_layer_0} T0 ; Set nozzle temp and wait
 G92 E0 ; Set Extruder position to zero
 ; Uncomment the following lines to enable nozzle purge line along left edge of bed
-;G1 Z2.0 F3000 ; Raise Z axis
-;G1 X1.1 Y20 Z0.2 F3600.0 ; Move to purge line start position
-;G1 Y220 F1500.0 E10 ; Draw first purge line
-;G1 X1.4 F3600.0 ; Move to side
-;G1 Y20 F1500.0 E20 ; Draw second purge line
+;G1 Z2.0 F1200 ; Raise Z axis
+;G1 X1.1 Y20 Z0.2 F1200.0 ; Move to purge line start position
+;G1 Y220 F1200.0 E10 ; Draw first purge line
+;G1 X1.4 F1200.0 ; Move to side
+;G1 Y20 F1200.0 E20 ; Draw second purge line
 ;G92 E0 ; Reset Extruder
-;G1 Z2.0 F3000 ; Move Z Axis up little to prevent scratching of Heat Bed
-;G1 X5 Y20 Z0.2 F3600.0 ; Move over to finish nozzle wipe
+;G1 Z2.0 F1200 ; Move Z Axis up little to prevent scratching of Heat Bed
+;G1 X5 Y20 Z0.2 F1200.0 ; Move over to finish nozzle wipe
 ;G92 E0`,
     description: 'Pre-print machine initialization G-code commands (homing, bed heating, purge line).',
     status: 'unlocked',
@@ -1174,11 +1215,11 @@ G92 E0 ; Set Extruder position to zero
     name: 'End G-Code Script',
     category: 'printer_gcode',
     defaultValue: `M83 ; Set extruder to Relative
-G1 E-5 F3000 ; Retract 5mm of filament at 50mm/s
+G1 E-5 F1200 ; Retract 5mm of filament at 20mm/s
 G91 ; Set all axes to Relative
-G1 Z10 F3000 ; Move Z up 10mm above last position of build
+G1 Z10 F1200 ; Move Z up 10mm above last position of build at 20mm/s exit speed
 G90 ; Set all axes to Absolute
-G1 X0 Y{machine_depth} F3000 ; Park print head (left and back of build plate)
+G1 X0 Y{machine_depth} F1200 ; Park print head at 20mm/s exit speed (left and back of build plate)
 M106 S0 ; Set fan speed to 0
 M104 S0 ; Set bed temp to 0
 M140 S0 ; Set Nozzle temp to 0
@@ -1297,6 +1338,9 @@ export const DEFAULT_PRINTER_SETTINGS: PrinterSettings = {
   restrictSettingsAccess: PRINTER_SETTINGS_REGISTRY.restrictSettingsAccess.defaultValue,
   testFlowBaseGapMultiplier: PRINTER_SETTINGS_REGISTRY.testFlowBaseGapMultiplier.defaultValue,
   testFlowWallGapMultiplier: PRINTER_SETTINGS_REGISTRY.testFlowWallGapMultiplier.defaultValue,
+  testFlowYOffset: PRINTER_SETTINGS_REGISTRY.testFlowYOffset.defaultValue,
+  approachSpeed: PRINTER_SETTINGS_REGISTRY.approachSpeed.defaultValue,
+  exitSpeed: PRINTER_SETTINGS_REGISTRY.exitSpeed.defaultValue,
   autoNameModel: PRINTER_SETTINGS_REGISTRY.autoNameModel.defaultValue,
   startGcode: PRINTER_SETTINGS_REGISTRY.startGcode.defaultValue,
   endGcode: PRINTER_SETTINGS_REGISTRY.endGcode.defaultValue,

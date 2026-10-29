@@ -40,12 +40,12 @@ export const GCodeTextureControls: React.FC<GCodeTextureControlsProps> = ({
   const [depth, setDepth] = useState<number>(
     Math.max(0.1, Math.min(5.0, params.gcodeTextureDepth ?? params.gcodeTextureDivergence ?? 2.0))
   );
-  // Frequency mini value 10, exact divisor of 360
+  // Frequency mini value 10, exact divisor of 360, default 30
   const [frequency, setFrequency] = useState<number>(
-    getNearest360Divisor(params.gcodeTextureFrequency ?? 10.0, 10)
+    getNearest360Divisor(params.gcodeTextureFrequency ?? 30.0, 10)
   );
   const [rawFreqInput, setRawFreqInput] = useState<string>(
-    String(getNearest360Divisor(params.gcodeTextureFrequency ?? 10.0, 10))
+    String(getNearest360Divisor(params.gcodeTextureFrequency ?? 30.0, 10))
   );
 
   const [layerInterval, setLayerInterval] = useState<number>(params.gcodeTextureLayerInterval ?? 5);
@@ -59,7 +59,7 @@ export const GCodeTextureControls: React.FC<GCodeTextureControlsProps> = ({
     setEnabled(!!params.gcodeTextureEnabled);
     const syncedDepth = Math.max(0.1, Math.min(5.0, params.gcodeTextureDepth ?? params.gcodeTextureDivergence ?? 2.0));
     setDepth(syncedDepth);
-    const syncedFreq = getNearest360Divisor(params.gcodeTextureFrequency ?? 10.0, 10);
+    const syncedFreq = getNearest360Divisor(params.gcodeTextureFrequency ?? 30.0, 10);
     setFrequency(syncedFreq);
     setRawFreqInput(String(syncedFreq));
     setLayerInterval(params.gcodeTextureLayerInterval ?? 5);
@@ -79,7 +79,7 @@ export const GCodeTextureControls: React.FC<GCodeTextureControlsProps> = ({
     0.1,
     Math.min(5.0, params.gcodeTextureDepth ?? params.gcodeTextureDivergence ?? 2.0)
   );
-  const currentParamsFreq = getNearest360Divisor(params.gcodeTextureFrequency ?? 10.0, 10);
+  const currentParamsFreq = getNearest360Divisor(params.gcodeTextureFrequency ?? 30.0, 10);
 
   const hasUnappliedChanges =
     enabled !== !!params.gcodeTextureEnabled ||
@@ -118,13 +118,23 @@ export const GCodeTextureControls: React.FC<GCodeTextureControlsProps> = ({
   const handleResetAll = () => {
     setEnabled(false);
     const defaultDepth = Math.min(5.0, DEFAULT_MODEL_PARAMS.gcodeTextureDivergence ?? 2.0);
-    const defaultFreq = getNearest360Divisor(DEFAULT_MODEL_PARAMS.gcodeTextureFrequency ?? 10.0, 10);
+    const defaultFreq = getNearest360Divisor(DEFAULT_MODEL_PARAMS.gcodeTextureFrequency ?? 30.0, 10);
     setDepth(defaultDepth);
     setFrequency(defaultFreq);
     setRawFreqInput(String(defaultFreq));
     setLayerInterval(DEFAULT_MODEL_PARAMS.gcodeTextureLayerInterval ?? 5);
     setWidth(DEFAULT_MODEL_PARAMS.gcodeTextureWidth ?? 1.0);
     setAngleOffset(DEFAULT_MODEL_PARAMS.gcodeTextureAngleOffset ?? 0.0);
+    if (params.gcodeTextureEnabled) {
+      onApply({
+        gcodeTextureEnabled: false,
+        gcodeTextureDivergence: defaultDepth,
+        gcodeTextureFrequency: defaultFreq,
+        gcodeTextureLayerInterval: DEFAULT_MODEL_PARAMS.gcodeTextureLayerInterval ?? 5,
+        gcodeTextureWidth: DEFAULT_MODEL_PARAMS.gcodeTextureWidth ?? 1.0,
+        gcodeTextureAngleOffset: DEFAULT_MODEL_PARAMS.gcodeTextureAngleOffset ?? 0.0,
+      });
+    }
   };
 
   const texturesCount = Math.round(360 / frequency);
@@ -161,7 +171,19 @@ export const GCodeTextureControls: React.FC<GCodeTextureControlsProps> = ({
           </Button>
           <Switch
             checked={enabled}
-            onCheckedChange={(val) => setEnabled(val)}
+            onCheckedChange={(val) => {
+              setEnabled(val);
+              if (!val && params.gcodeTextureEnabled) {
+                onApply({
+                  gcodeTextureEnabled: false,
+                  gcodeTextureDivergence: depth,
+                  gcodeTextureFrequency: frequency,
+                  gcodeTextureLayerInterval: layerInterval,
+                  gcodeTextureWidth: width,
+                  gcodeTextureAngleOffset: angleOffset,
+                });
+              }
+            }}
             className="data-checked:bg-amber-600 data-unchecked:bg-stone-200 cursor-pointer"
           />
         </div>
@@ -261,8 +283,8 @@ export const GCodeTextureControls: React.FC<GCodeTextureControlsProps> = ({
                   variant="ghost"
                   size="icon"
                   className="h-5 w-5 text-stone-400 hover:text-amber-700 hover:bg-stone-100/50 rounded transition-all cursor-pointer"
-                  onClick={() => commitFrequency(10.0)}
-                  title={language === "cy" ? "Ailosod Amlder (10°)" : "Reset Frequency (10°)"}
+                  onClick={() => commitFrequency(DEFAULT_MODEL_PARAMS.gcodeTextureFrequency ?? 30.0)}
+                  title={language === "cy" ? "Ailosod Amlder (30°)" : "Reset Frequency (30°)"}
                 >
                   <RotateCcw className="h-2.5 w-2.5" />
                 </Button>
@@ -495,55 +517,55 @@ export const GCodeTextureControls: React.FC<GCodeTextureControlsProps> = ({
               ))}
             </div>
           </section>
+
+          {/* Apply Texture Button (only visible when toggle button in G-code texture menu has been turned on) */}
+          <div className="mt-3 pt-2 border-t border-stone-200 space-y-1">
+            <button
+              type="button"
+              onClick={handleApply}
+              disabled={isCalculating}
+              className={`w-full py-2 px-3 rounded-xl font-bold uppercase tracking-wider text-[10px] flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer ${
+                isCalculating
+                  ? "bg-amber-400 text-amber-950 opacity-80 cursor-wait"
+                  : hasUnappliedChanges
+                  ? "bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white ring-2 ring-amber-400/50 scale-[1.01]"
+                  : justApplied
+                  ? "bg-emerald-600 text-white"
+                  : "bg-[#854D0E] hover:bg-amber-800 text-white"
+              }`}
+              title={t("descApplyTexture")}
+            >
+              {isCalculating ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>{language === "cy" ? "Wrthi'n Ailgyfrifo G-god..." : "Recalculating G-code..."}</span>
+                </>
+              ) : justApplied ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-white" />
+                  <span>{language === "cy" ? "Gwead Wedi'i Osod!" : "Texture Applied!"}</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                  <span>
+                    {hasUnappliedChanges
+                      ? language === "cy"
+                        ? "Gosod Gwead (Ailgyfrifo)"
+                        : "Apply Texture (Recalculate)"
+                      : t("btnApplyTexture")}
+                  </span>
+                </>
+              )}
+            </button>
+            <p className="text-[8.5px] text-stone-500 text-center font-medium leading-tight">
+              {language === "cy"
+                ? "Cliciwch i gymhwyso'r paramedrau gwead ac ailgyfrifo'r llwybr offer G-god."
+                : "Click to apply texture settings and recalculate the G-code toolpath."}
+            </p>
+          </div>
         </div>
       )}
-
-      {/* Apply Texture Button */}
-      <div className="mt-3 pt-2 border-t border-stone-200 space-y-1">
-        <button
-          type="button"
-          onClick={handleApply}
-          disabled={isCalculating}
-          className={`w-full py-2 px-3 rounded-xl font-bold uppercase tracking-wider text-[10px] flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer ${
-            isCalculating
-              ? "bg-amber-400 text-amber-950 opacity-80 cursor-wait"
-              : hasUnappliedChanges
-              ? "bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white ring-2 ring-amber-400/50 scale-[1.01]"
-              : justApplied
-              ? "bg-emerald-600 text-white"
-              : "bg-[#854D0E] hover:bg-amber-800 text-white"
-          }`}
-          title={t("descApplyTexture")}
-        >
-          {isCalculating ? (
-            <>
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              <span>{language === "cy" ? "Wrthi'n Ailgyfrifo G-god..." : "Recalculating G-code..."}</span>
-            </>
-          ) : justApplied ? (
-            <>
-              <Check className="w-3.5 h-3.5 text-white" />
-              <span>{language === "cy" ? "Gwead Wedi'i Osod!" : "Texture Applied!"}</span>
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-              <span>
-                {hasUnappliedChanges
-                  ? language === "cy"
-                    ? "Gosod Gwead (Ailgyfrifo)"
-                    : "Apply Texture (Recalculate)"
-                  : t("btnApplyTexture")}
-              </span>
-            </>
-          )}
-        </button>
-        <p className="text-[8.5px] text-stone-500 text-center font-medium leading-tight">
-          {language === "cy"
-            ? "Cliciwch i gymhwyso'r paramedrau gwead ac ailgyfrifo'r llwybr offer G-god."
-            : "Click to apply texture settings and recalculate the G-code toolpath."}
-        </p>
-      </div>
     </div>
   );
 };

@@ -822,7 +822,7 @@ export default function App() {
       'compensateWallShrinkage', 'wallShrinkageDraft',
       'lockRibDepth', 'lockRibWidth',
       'allowCustomSize', 'defaultWidth', 'defaultHeight', 'maxWidth', 'maxHeight',
-      'limitToBuildVolume', 'cubeMode', 'testFlowBaseLineDistance', 'testFlowWallLineDistance', 'testFlowLineDistance', 'startGcode', 'endGcode'
+      'limitToBuildVolume', 'cubeMode', 'testFlowBaseLineDistance', 'testFlowWallLineDistance', 'testFlowLineDistance', 'approachSpeed', 'exitSpeed', 'startGcode', 'endGcode'
     ];
     printerKeys.forEach((key) => {
       const val = (currentSettings as any)[key];
@@ -1294,9 +1294,7 @@ export default function App() {
                 if (showSettings) {
                   setShowSettings(false);
                 } else {
-                  const isRestricted = settings.restrictSettingsAccess !== undefined
-                    ? settings.restrictSettingsAccess
-                    : RESTRICT_SETTINGS_ACCESS;
+                  const isRestricted = RESTRICT_SETTINGS_ACCESS;
                   if (isRestricted) {
                     setIsSettingsAuthModalOpen(true);
                   } else {
@@ -1505,6 +1503,8 @@ export default function App() {
                                 wallCount: DEFAULT_PRINTER_SETTINGS.wallCount,
                                 startGcode: DEFAULT_PRINTER_SETTINGS.startGcode,
                                 endGcode: DEFAULT_PRINTER_SETTINGS.endGcode,
+                                approachSpeed: DEFAULT_PRINTER_SETTINGS.approachSpeed,
+                                exitSpeed: DEFAULT_PRINTER_SETTINGS.exitSpeed,
                               });
                             }}
                             className="p-1 hover:bg-[#EA580C]/10 rounded-md text-[#EA580C] transition-all cursor-pointer flex items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wider h-6 border border-[#EA580C]/20 px-1.5 shrink-0"
@@ -1631,20 +1631,7 @@ export default function App() {
                               className="w-full bg-white border border-stone-300 rounded-xl py-1 px-2.5 text-xs font-bold text-stone-900 focus:border-[#EA580C] focus:ring-1 focus:ring-[#EA580C] outline-none transition-all font-mono"
                             />
                           </div>
-                          <div className="group space-y-1">
-                            <label className="text-[8px] font-black uppercase text-stone-500 tracking-wider h-4 block">{language === 'cy' ? 'Tynnu Nôl (mm)' : 'Retraction (mm)'}</label>
-                            <input 
-                              type="number" 
-                              step="0.1"
-                              value={localSettings.retractionDistance !== undefined ? localSettings.retractionDistance : 0} 
-                              onChange={(e) => {
-                                const val = Number(e.target.value);
-                                if (!isNaN(val)) setLocalSettings({...localSettings, retractionDistance: val});
-                              }}
-                              className="w-full bg-white border border-stone-300 rounded-xl py-1 px-2.5 text-xs font-bold text-stone-900 focus:border-[#EA580C] focus:ring-1 focus:ring-[#EA580C] outline-none transition-all font-mono"
-                            />
-                          </div>
-                          <div className="group space-y-1">
+                          <div className="col-span-2 group space-y-1">
                             <div className="flex justify-between items-center h-4">
                               <label className="text-[8px] font-black uppercase text-stone-500 tracking-wider block">{language === 'cy' ? 'Graddfa' : 'Scale'}</label>
                               <span className="text-[7.5px] font-mono font-bold text-[#EA580C]">×{localSettings.scale !== undefined ? localSettings.scale : 1}</span>
@@ -1670,7 +1657,7 @@ export default function App() {
                               <div className="col-span-2 bg-stone-50 border border-stone-200/90 rounded-2xl p-2.5 space-y-2">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#EA580C] shrink-0" />
+                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSeparateFlow ? 'bg-emerald-600' : 'bg-rose-500'}`} />
                                     <span className="text-[8.5px] font-black uppercase text-stone-700 tracking-wider">
                                       {language === 'cy' ? 'Llif ar Wahân (Waliau / Sylfaen)' : 'Separate Wall & Base Flow'}
                                     </span>
@@ -1684,7 +1671,7 @@ export default function App() {
                                       wallFlow: localSettings.wallFlow !== undefined ? localSettings.wallFlow : DEFAULT_PRINTER_SETTINGS.wallFlow,
                                     })}
                                     className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                      isSeparateFlow ? 'bg-[#EA580C]' : 'bg-stone-300'
+                                      isSeparateFlow ? 'bg-emerald-600' : 'bg-rose-500'
                                     }`}
                                     title={language === 'cy' ? 'Toglo llif ar wahân ar gyfer waliau a sylfaen' : 'Toggle separate flow for walls and base'}
                                   >
@@ -1764,7 +1751,7 @@ export default function App() {
                               <div className="col-span-2 bg-stone-50 border border-stone-200/90 rounded-2xl p-2.5 space-y-1.5">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-1.5">
-                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isVaseMode ? 'bg-[#15803D]' : 'bg-stone-400'}`} />
+                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isVaseMode ? 'bg-emerald-600' : 'bg-rose-500'}`} />
                                     <div>
                                       <span className="text-[8.5px] font-black uppercase text-stone-700 tracking-wider block">
                                         {language === 'cy' ? 'Modd Fâs (Troell Barhaus)' : 'Vase Mode (Continuous Spiral)'}
@@ -1784,7 +1771,7 @@ export default function App() {
                                       vaseMode: !(localSettings.vaseMode !== false),
                                     })}
                                     className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                      isVaseMode ? 'bg-[#15803D]' : 'bg-stone-300'
+                                      isVaseMode ? 'bg-emerald-600' : 'bg-rose-500'
                                     } ${!isWallCountOne ? 'opacity-40 cursor-not-allowed' : ''}`}
                                     title={language === 'cy' ? 'Toglo modd fâs (troell barhaus)' : 'Toggle vase mode (continuous spiral)'}
                                   >
@@ -1799,17 +1786,17 @@ export default function App() {
                             );
                           })()}
 
-                          {/* Skirt Option (1 line, 5mm away from model) */}
+                          {/* Skirt Option (1 line) */}
                           {(() => {
                             const isSkirtEnabled = localSettings.enableSkirt !== undefined ? localSettings.enableSkirt : true;
                             return (
                               <div className="col-span-2 bg-stone-50 border border-stone-200/90 rounded-2xl p-2.5 space-y-2">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-1.5">
-                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSkirtEnabled ? 'bg-emerald-500' : 'bg-stone-400'}`} />
+                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSkirtEnabled ? 'bg-emerald-600' : 'bg-rose-500'}`} />
                                     <div>
                                       <span className="text-[8.5px] font-black uppercase text-stone-700 tracking-wider block">
-                                        {language === 'cy' ? 'Sgert (1 Llinell, 5mm)' : 'Skirt (1 Line, 5mm)'}
+                                        {language === 'cy' ? 'Sgert (1 Llinell)' : 'Skirt (1 Line)'}
                                       </span>
                                       <span className="text-[7.5px] font-medium text-stone-500 block leading-tight">
                                         {language === 'cy' ? 'Preimio\'r ffroenell o amgylch y model yn lle carthu' : 'Prime nozzle around model instead of purging'}
@@ -1821,10 +1808,10 @@ export default function App() {
                                     onClick={() => setLocalSettings({
                                       ...localSettings,
                                       enableSkirt: !isSkirtEnabled,
-                                      skirtDistance: localSettings.skirtDistance !== undefined ? localSettings.skirtDistance : 5,
+                                      skirtDistance: localSettings.skirtDistance !== undefined ? localSettings.skirtDistance : 10,
                                     })}
                                     className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                      isSkirtEnabled ? 'bg-[#EA580C]' : 'bg-stone-300'
+                                      isSkirtEnabled ? 'bg-emerald-600' : 'bg-rose-500'
                                     }`}
                                     title={language === 'cy' ? 'Toglo sgert cyn argraffu' : 'Toggle skirt before printing'}
                                   >
@@ -1869,7 +1856,7 @@ export default function App() {
                               <div className="col-span-2 bg-stone-50 border border-stone-200/90 rounded-2xl p-2.5 space-y-2">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-1.5">
-                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isContinuous ? 'bg-[#EA580C]' : 'bg-stone-400'}`} />
+                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isContinuous ? 'bg-emerald-600' : 'bg-rose-500'}`} />
                                     <div>
                                       <span className="text-[8.5px] font-black uppercase text-stone-700 tracking-wider block">
                                         {language === 'cy' ? 'Allwthio Parhaus' : 'Continuous Extrusion'}
@@ -1888,7 +1875,7 @@ export default function App() {
                                       continuousExtrusion: !isContinuous,
                                     })}
                                     className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                      isContinuous ? 'bg-[#EA580C]' : 'bg-stone-300'
+                                      isContinuous ? 'bg-emerald-600' : 'bg-rose-500'
                                     }`}
                                     title={language === 'cy' ? 'Toglo allwthio parhaus' : 'Toggle continuous extrusion'}
                                   >
@@ -1911,7 +1898,7 @@ export default function App() {
                               <div className="col-span-2 bg-stone-50 border border-stone-200/90 rounded-2xl p-2.5 space-y-2">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-1.5">
-                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isShrinkageEnabled ? 'bg-[#EA580C]' : 'bg-stone-400'}`} />
+                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isShrinkageEnabled ? 'bg-emerald-600' : 'bg-rose-500'}`} />
                                     <div>
                                       <span className="text-[8.5px] font-black uppercase text-stone-700 tracking-wider block">
                                         {language === 'cy' ? 'Digolledu Crebachu Waliau' : 'Compensate Wall Shrinkage'}
@@ -1931,7 +1918,7 @@ export default function App() {
                                       wallShrinkageDraft: shrinkageValue,
                                     })}
                                     className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                      isShrinkageEnabled ? 'bg-[#EA580C]' : 'bg-stone-300'
+                                      isShrinkageEnabled ? 'bg-emerald-600' : 'bg-rose-500'
                                     }`}
                                     title={language === 'cy' ? 'Toglo digolledu crebachu waliau' : 'Toggle wall shrinkage compensation'}
                                   >
@@ -2322,15 +2309,18 @@ export default function App() {
                           </div>
                         </div>
 
-                        {/* New Option to Limit model size to build volume */}
+                        {/* Option to Limit model size to build volume */}
                         <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-stone-200">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[9px] font-black uppercase text-stone-700 tracking-wider font-sans">
-                              {language === 'cy' ? 'Cyfyngu i Chyfaint Argraffu' : 'Limit to Build Volume'}
-                            </span>
-                            <span className="text-[7.5px] font-bold uppercase text-stone-400 tracking-wide">
-                              {language === 'cy' ? 'Atal dyluniadau rhy fawr' : 'Prevent oversized models'}
-                            </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${localSettings.limitToBuildVolume !== false ? 'bg-emerald-600' : 'bg-rose-500'}`} />
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[9px] font-black uppercase text-stone-700 tracking-wider font-sans">
+                                {language === 'cy' ? 'Cyfyngu i Chyfaint Argraffu' : 'Limit to Build Volume'}
+                              </span>
+                              <span className="text-[7.5px] font-bold uppercase text-stone-400 tracking-wide">
+                                {language === 'cy' ? 'Atal dyluniadau rhy fawr' : 'Prevent oversized models'}
+                              </span>
+                            </div>
                           </div>
                           <button
                             type="button"
@@ -2341,84 +2331,35 @@ export default function App() {
                                 limitToBuildVolume: nextVal
                               });
                             }}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                              localSettings.limitToBuildVolume !== false
-                                ? 'bg-[#15803D] hover:bg-[#166534] border-emerald-800/40 text-white font-extrabold shadow-sm'
-                                : 'bg-[#7F7F7F]/40 hover:bg-[#7F7F7F]/55 border-[#404040]/30 text-stone-600 font-extrabold'
+                            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                              localSettings.limitToBuildVolume !== false ? 'bg-emerald-600' : 'bg-rose-500'
                             }`}
                             title={
                               localSettings.limitToBuildVolume !== false
-                                ? (language === 'cy' ? "Cyfyngiad ar waith (Ar glo)" : "Limiting active (Locked default)")
-                                : (language === 'cy' ? "Cyfyngiad wedi'i ddiffodd" : "Limiting inactive (Unlocked)")
+                                ? (language === 'cy' ? "Cyfyngiad ar waith (Ymlaen)" : "Limiting active (On)")
+                                : (language === 'cy' ? "Cyfyngiad wedi'i ddiffodd (Diffodd)" : "Limiting inactive (Off)")
                             }
                           >
-                            {localSettings.limitToBuildVolume !== false ? (
-                              <>
-                                <Lock className="w-3 h-3 text-emerald-100" />
-                                <span>{language === 'cy' ? 'Ar Clo' : 'Locked'}</span>
-                              </>
-                            ) : (
-                              <>
-                                <Unlock className="w-3 h-3 text-white" />
-                                <span>{language === 'cy' ? 'Rhydd' : 'Unlocked'}</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-
-                        {/* Cube Option Toggle */}
-                        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-stone-200">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[9px] font-black uppercase text-stone-700 tracking-wider font-sans">
-                              {language === 'cy' ? 'Opsiwn Ciwb' : 'Cube Option'}
-                            </span>
-                            <span className="text-[7.5px] font-bold uppercase text-stone-400 tracking-wide">
-                              {language === 'cy' ? 'Ciwb 30x30x30mm agored' : 'Hollow open 30x30x30mm cube'}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const nextVal = !localSettings.cubeMode;
-                              setLocalSettings({
-                                ...localSettings,
-                                cubeMode: nextVal
-                              });
-                            }}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                              localSettings.cubeMode
-                                ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-700 text-white font-extrabold shadow-sm'
-                                : 'bg-[#7F7F7F]/40 hover:bg-[#7F7F7F]/55 border-[#404040]/30 text-stone-600 font-extrabold'
-                            }`}
-                            title={
-                              localSettings.cubeMode
-                                ? (language === 'cy' ? "Modd ciwb wedi'i alluogi" : "Cube mode enabled")
-                                : (language === 'cy' ? "Modd ciwb wedi'i analluogi" : "Cube mode disabled")
-                            }
-                          >
-                            {localSettings.cubeMode ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-100" />
-                                <span>{language === 'cy' ? 'Ie' : 'Yes'}</span>
-                              </>
-                            ) : (
-                              <>
-                                <X className="w-3 h-3 text-stone-500" />
-                                <span>{language === 'cy' ? 'Na' : 'No'}</span>
-                              </>
-                            )}
+                            <span
+                              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                localSettings.limitToBuildVolume !== false ? 'translate-x-4' : 'translate-x-0'
+                              }`}
+                            />
                           </button>
                         </div>
 
                         {/* Texture Option Toggle (default: off) */}
                         <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-stone-200">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[9px] font-black uppercase text-stone-700 tracking-wider font-sans">
-                              {language === 'cy' ? 'Opsiwn Gwead' : 'Texture Option'}
-                            </span>
-                            <span className="text-[7.5px] font-bold uppercase text-stone-400 tracking-wide">
-                              {language === 'cy' ? 'Dangos tab gwead yn y paramedrau dylunio' : 'Show texture tab in design parameters'}
-                            </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${localSettings.enableTexture ? 'bg-emerald-600' : 'bg-rose-500'}`} />
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[9px] font-black uppercase text-stone-700 tracking-wider font-sans">
+                                {language === 'cy' ? 'Opsiwn Gwead' : 'Texture Option'}
+                              </span>
+                              <span className="text-[7.5px] font-bold uppercase text-stone-400 tracking-wide">
+                                {language === 'cy' ? 'Dangos tab gwead yn y paramedrau dylunio' : 'Show texture tab in design parameters'}
+                              </span>
+                            </div>
                           </div>
                           <button
                             type="button"
@@ -2429,40 +2370,35 @@ export default function App() {
                                 enableTexture: nextVal
                               });
                             }}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                              localSettings.enableTexture
-                                ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-700 text-white font-extrabold shadow-sm'
-                                : 'bg-[#7F7F7F]/40 hover:bg-[#7F7F7F]/55 border-[#404040]/30 text-stone-600 font-extrabold'
+                            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                              localSettings.enableTexture ? 'bg-emerald-600' : 'bg-rose-500'
                             }`}
                             title={
                               localSettings.enableTexture
-                                ? (language === 'cy' ? "Gwead wedi'i alluogi" : "Texture enabled")
-                                : (language === 'cy' ? "Gwead wedi'i analluogi" : "Texture disabled")
+                                ? (language === 'cy' ? "Gwead wedi'i alluogi (Ymlaen)" : "Texture enabled (On)")
+                                : (language === 'cy' ? "Gwead wedi'i analluogi (Diffodd)" : "Texture disabled (Off)")
                             }
                           >
-                            {localSettings.enableTexture ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-100" />
-                                <span>{language === 'cy' ? 'Ie' : 'Yes'}</span>
-                              </>
-                            ) : (
-                              <>
-                                <X className="w-3 h-3 text-stone-500" />
-                                <span>{language === 'cy' ? 'Na' : 'No'}</span>
-                              </>
-                            )}
+                            <span
+                              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                localSettings.enableTexture ? 'translate-x-4' : 'translate-x-0'
+                              }`}
+                            />
                           </button>
                         </div>
 
                         {/* G-code Texture Option Toggle (default: off) */}
                         <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-stone-200">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[9px] font-black uppercase text-stone-700 tracking-wider font-sans">
-                              {language === 'cy' ? 'Opsiwn Gwead G-god' : 'G-code Texture Option'}
-                            </span>
-                            <span className="text-[7.5px] font-bold uppercase text-stone-400 tracking-wide">
-                              {language === 'cy' ? 'Dangos tab gwead G-god yn y ddewislen gyfrifo' : 'Show G-code texture tab in the calculate menu'}
-                            </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${localSettings.enableGcodeTexture ? 'bg-emerald-600' : 'bg-rose-500'}`} />
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[9px] font-black uppercase text-stone-700 tracking-wider font-sans">
+                                {language === 'cy' ? 'Opsiwn Gwead G-god' : 'G-code Texture Option'}
+                              </span>
+                              <span className="text-[7.5px] font-bold uppercase text-stone-400 tracking-wide">
+                                {language === 'cy' ? 'Dangos tab gwead G-god yn y ddewislen gyfrifo' : 'Show G-code texture tab in the calculate menu'}
+                              </span>
+                            </div>
                           </div>
                           <button
                             type="button"
@@ -2473,75 +2409,20 @@ export default function App() {
                                 enableGcodeTexture: nextVal
                               });
                             }}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                              localSettings.enableGcodeTexture
-                                ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-700 text-white font-extrabold shadow-sm'
-                                : 'bg-[#7F7F7F]/40 hover:bg-[#7F7F7F]/55 border-[#404040]/30 text-stone-600 font-extrabold'
+                            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                              localSettings.enableGcodeTexture ? 'bg-emerald-600' : 'bg-rose-500'
                             }`}
                             title={
                               localSettings.enableGcodeTexture
-                                ? (language === 'cy' ? "Gwead G-god wedi'i alluogi" : "G-code texture enabled")
-                                : (language === 'cy' ? "Gwead G-god wedi'i analluogi" : "G-code texture disabled")
+                                ? (language === 'cy' ? "Gwead G-god wedi'i alluogi (Ymlaen)" : "G-code texture enabled (On)")
+                                : (language === 'cy' ? "Gwead G-god wedi'i analluogi (Diffodd)" : "G-code texture disabled (Off)")
                             }
                           >
-                            {localSettings.enableGcodeTexture ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-100" />
-                                <span>{language === 'cy' ? 'Ie' : 'Yes'}</span>
-                              </>
-                            ) : (
-                              <>
-                                <X className="w-3 h-3 text-stone-500" />
-                                <span>{language === 'cy' ? 'Na' : 'No'}</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-
-                        {/* Restricted Settings Access Toggle */}
-                        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-stone-200">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[9px] font-black uppercase text-stone-700 tracking-wider font-sans">
-                              {language === 'cy' ? 'Mynediad Cyfyngedig i Osodiadau' : 'Restricted Settings Access'}
-                            </span>
-                            <span className="text-[7.5px] font-bold uppercase text-stone-400 tracking-wide">
-                              {language === 'cy' ? 'Gofyn am god 4 digid i agor gosodiadau' : 'Require 4-digit code to open settings'}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const currentVal = localSettings.restrictSettingsAccess !== undefined 
-                                ? localSettings.restrictSettingsAccess 
-                                : RESTRICT_SETTINGS_ACCESS;
-                              const nextVal = !currentVal;
-                              setLocalSettings({
-                                ...localSettings,
-                                restrictSettingsAccess: nextVal
-                              });
-                            }}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                              (localSettings.restrictSettingsAccess !== undefined ? localSettings.restrictSettingsAccess : RESTRICT_SETTINGS_ACCESS)
-                                ? 'bg-amber-600 hover:bg-amber-500 border-amber-700 text-white font-extrabold shadow-sm'
-                                : 'bg-[#7F7F7F]/40 hover:bg-[#7F7F7F]/55 border-[#404040]/30 text-stone-600 font-extrabold'
-                            }`}
-                            title={
-                              (localSettings.restrictSettingsAccess !== undefined ? localSettings.restrictSettingsAccess : RESTRICT_SETTINGS_ACCESS)
-                                ? (language === 'cy' ? "Mynediad cyfyngedig wedi'i alluogi" : "Restricted access enabled")
-                                : (language === 'cy' ? "Mynediad cyfyngedig wedi'i analluogi" : "Restricted access disabled")
-                            }
-                          >
-                            {(localSettings.restrictSettingsAccess !== undefined ? localSettings.restrictSettingsAccess : RESTRICT_SETTINGS_ACCESS) ? (
-                              <>
-                                <Check className="w-3 h-3 text-amber-100" />
-                                <span>{language === 'cy' ? 'Ie' : 'Yes'}</span>
-                              </>
-                            ) : (
-                              <>
-                                <X className="w-3 h-3 text-stone-500" />
-                                <span>{language === 'cy' ? 'Na' : 'No'}</span>
-                              </>
-                            )}
+                            <span
+                              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                localSettings.enableGcodeTexture ? 'translate-x-4' : 'translate-x-0'
+                              }`}
+                            />
                           </button>
                         </div>
 
@@ -3937,9 +3818,7 @@ export default function App() {
             if (!show) {
               setShowSettings(false);
             } else {
-              const isRestricted = settings.restrictSettingsAccess !== undefined
-                ? settings.restrictSettingsAccess
-                : RESTRICT_SETTINGS_ACCESS;
+              const isRestricted = RESTRICT_SETTINGS_ACCESS;
               if (isRestricted) {
                 setIsSettingsAuthModalOpen(true);
               } else {
