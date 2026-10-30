@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Info, X, Send, CheckCircle2, Loader2, MessageSquare, AlertCircle, Sparkles, RotateCcw } from 'lucide-react';
-import { FEEDBACK_EMAIL_ADDRESS } from '../parameters/index';
+import { FEEDBACK_EMAIL_ADDRESS, FEEDBACK_SERVICE_ENDPOINT } from '../parameters/index';
 
 interface AboutAppModalProps {
   isOpen: boolean;
@@ -46,32 +46,37 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
     setErrorMessage(null);
     setIsSubmitting(true);
 
+    // Target endpoint: uses custom endpoint if defined (e.g. Google Apps Script Web App), otherwise FormSubmit
+    const targetEndpoint = FEEDBACK_SERVICE_ENDPOINT.trim() || `https://formsubmit.co/ajax/${encodeURIComponent(FEEDBACK_EMAIL_ADDRESS)}`;
+    const isGoogleScript = targetEndpoint.includes('script.google.com');
+
+    const payload = {
+      name: senderName.trim() || 'Anonymous User',
+      email: senderEmail.trim() || 'No reply email provided',
+      category: category,
+      message: message.trim(),
+      app: 'Spirulina 3D Printing Web App',
+      submittedAt: new Date().toISOString(),
+      _subject: `[Spirulina App] ${category.toUpperCase()}: ${message.trim().slice(0, 40)}...`,
+      _captcha: 'false',
+      _template: 'table',
+    };
+
     try {
-      // Send form data asynchronously to the configured recipient email
-      // Using an abort controller with a 4-second timeout to ensure the UI remains responsive
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
 
       try {
-        await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(FEEDBACK_EMAIL_ADDRESS)}`, {
+        await fetch(targetEndpoint, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
+          headers: isGoogleScript
+            ? { 'Content-Type': 'text/plain;charset=utf-8' }
+            : { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          redirect: 'follow',
           signal: controller.signal,
-          body: JSON.stringify({
-            name: senderName.trim() || 'Anonymous User',
-            email: senderEmail.trim() || 'No reply email provided',
-            category: category,
-            message: message.trim(),
-            app: 'Spirulina 3D Printing Web App',
-            submittedAt: new Date().toISOString(),
-            _subject: `[Spirulina App] ${category.toUpperCase()}: ${message.trim().slice(0, 40)}...`,
-          }),
+          body: JSON.stringify(payload),
         });
       } catch (netErr) {
-        // Log background transmission outcome; always provide smooth UX
         console.log('Feedback transmission logged:', netErr);
       } finally {
         clearTimeout(timeoutId);
@@ -248,7 +253,7 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="p-5 rounded-xl bg-emerald-950/60 border border-emerald-600/60 text-center flex flex-col items-center gap-3 my-2 shadow-inner"
+                    className="p-5 rounded-xl bg-emerald-950/60 border border-emerald-600/60 text-center flex flex-col items-center gap-3.5 my-2 shadow-inner"
                   >
                     <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                       <CheckCircle2 className="w-7 h-7" />
@@ -259,16 +264,17 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
                       </h4>
                       <p className="text-xs text-emerald-300/80 mt-1 max-w-md">
                         {language === 'cy'
-                          ? "Diolch yn fawr am eich adborth. Mae eich neges wedi'i chofnodi a bydd yn ein helpu i barhau i wella'r rhaglen a'r prosiect addysgol."
-                          : 'Thank you for your constructive feedback and suggestions. Your message has been received and will help us continue improving the application and educational project.'}
+                          ? "Diolch yn fawr am eich adborth. Mae eich neges wedi'i chyflwyno a bydd yn ein helpu i barhau i wella'r rhaglen a'r prosiect addysgol."
+                          : 'Thank you for your constructive feedback and suggestions. Your message has been submitted and will help us continue improving the application and educational project.'}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-3 mt-2">
+                    {/* Action buttons */}
+                    <div className="flex items-center justify-center gap-2.5 mt-2">
                       <button
                         type="button"
                         onClick={handleResetForm}
-                        className="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium border border-stone-700 flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                        className="px-3.5 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium border border-stone-700 flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>{language === 'cy' ? 'Danfon neges arall' : 'Send another message'}</span>

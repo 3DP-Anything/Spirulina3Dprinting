@@ -179,6 +179,18 @@ export const YOUTUBE_CHANNEL_URL: string = 'https://www.youtube.com/channel/UC3O
  */
 export const FEEDBACK_EMAIL_ADDRESS: string = 'lacan@cardiff.ac.uk';
 
+/**
+ * FEEDBACK_SERVICE_ENDPOINT
+ * 
+ * Optional custom endpoint URL for processing form submissions (e.g. Formspree, Web3Forms,
+ * Forminit, or a Google Apps Script Web App).
+ * If left empty (''), the app automatically routes via FormSubmit
+ * (https://formsubmit.co/ajax/<FEEDBACK_EMAIL_ADDRESS>).
+ * Example Formspree: 'https://formspree.io/f/your_form_id'
+ * Example Web3Forms: 'https://api.web3forms.com/submit'
+ */
+export const FEEDBACK_SERVICE_ENDPOINT: string = 'https://script.google.com/macros/s/AKfycbxOk3l6eZYlc_woiTu_HB9Bw9Hu9dYLWP6JIYzt3VpSMnlmIpbxeEGyuG7AG7CuldcR/exec';
+
 // ==============================================================================
 // 1. MODEL PARAMETERS REGISTRY
 // ==============================================================================
