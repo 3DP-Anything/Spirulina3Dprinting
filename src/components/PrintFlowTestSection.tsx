@@ -1,9 +1,9 @@
 import React from 'react';
-import { Download, Sliders, RotateCcw } from 'lucide-react';
+import { Download, Sliders, RotateCcw, FileText } from 'lucide-react';
 import { PrinterSettings } from '../lib/types';
 import { getTestFlowLoops, generateTestFlowGCode } from '../lib/test-flow';
 import { downloadGCode } from '../lib/export';
-import { TEST_FLOW_BASE_GAP_MULTIPLIER, TEST_FLOW_WALL_GAP_MULTIPLIER, DEFAULT_PRINTER_SETTINGS } from '../parameters/index';
+import { TEST_FLOW_BASE_GAP_MULTIPLIER, TEST_FLOW_WALL_GAP_MULTIPLIER, DEFAULT_PRINTER_SETTINGS, FLOW_TEST_PAPER_PDF_URL } from '../parameters/index';
 
 interface PrintFlowTestSectionProps {
   settings: PrinterSettings;
@@ -448,11 +448,24 @@ export const PrintFlowTestSection: React.FC<PrintFlowTestSectionProps> = ({
           </div>
         )}
 
+        {/* Flow Test Paper PDF Button */}
+        <a
+          id="btn-flow-test-paper-pdf"
+          href={FLOW_TEST_PAPER_PDF_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full h-8 bg-white hover:bg-teal-50 text-teal-800 border border-teal-300 hover:border-teal-400 rounded-lg text-[9.5px] font-bold tracking-wide transition-all shadow-2xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 mt-2"
+          title={language === 'cy' ? 'Agor Flow test paper.pdf mewn tab newydd' : 'Open Flow test paper.pdf in a new tab'}
+        >
+          <FileText className="w-3.5 h-3.5 text-teal-600" />
+          <span>Flow test paper.pdf</span>
+        </a>
+
         {/* Export Button */}
         <button
           type="button"
           onClick={handleExport}
-          className="w-full h-8 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 font-bold mt-1"
+          className="w-full h-8 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 font-bold mt-1.5"
         >
           <Download className="w-3.5 h-3.5 text-white" />
           {language === 'cy' ? 'Allforio Ffeil Prawf Llif' : 'Export Flow Test File'}

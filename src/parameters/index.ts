@@ -105,6 +105,24 @@ export const PASTE_RECIPE_PDF_FILE_NAME: string = 'Spirulina 3D Printing Paste R
  */
 export const PASTE_RECIPE_PDF_URL: string = `${(import.meta as any)?.env?.BASE_URL || '/'}pdf/${encodeURIComponent(PASTE_RECIPE_PDF_FILE_NAME)}`;
 
+/**
+ * FLOW_TEST_PAPER_PDF_FILE_NAME
+ * 
+ * File name of the flow test paper PDF located inside the /pdf folder.
+ * Clicking the "Flow test paper.pdf" button in the print flow test menu opens this
+ * document in a new browser tab.
+ * You can alter this file name directly here if the document is updated or renamed.
+ */
+export const FLOW_TEST_PAPER_PDF_FILE_NAME: string = 'Flow test paper.pdf';
+
+/**
+ * FLOW_TEST_PAPER_PDF_URL
+ * 
+ * Web path to access the flow test paper PDF. Automatically uses FLOW_TEST_PAPER_PDF_FILE_NAME.
+ */
+export const FLOW_TEST_PAPER_PDF_URL: string = `${(import.meta as any)?.env?.BASE_URL || '/'}pdf/${encodeURIComponent(FLOW_TEST_PAPER_PDF_FILE_NAME)}`;
+
+
 // ==============================================================================
 // SOCIAL & EXTERNAL CHANNELS CONFIGURATION
 // ==============================================================================
