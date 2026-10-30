@@ -15,6 +15,7 @@ import { GCodePlayerControls } from './components/GCodePlayerControls';
 import { GCodeTextureControls } from './components/GCodeTextureControls';
 import { SettingsAccessModal } from './components/SettingsAccessModal';
 import { AboutAppModal } from './components/AboutAppModal';
+import { CookiePreferencesModal } from './components/CookiePreferencesModal';
 import { PrintFlowTestSection } from './components/PrintFlowTestSection';
 import { CursorSmiley } from './components/CursorSmiley';
 import { ModelNameInput } from './components/ModelNameInput';
@@ -25,8 +26,16 @@ import { Button } from '@/components/ui/button';
 import { 
   Download, Settings, Info, Box, FileCode, Beaker, Upload, Save, FileDown, Route, Loader2, RotateCcw,
   PanelLeftClose, PanelLeftOpen, ChevronLeft, ChevronRight, AlertCircle, Smile, FileJson, Camera, FileText, RefreshCw,
-  Pause, Play, Sparkles, Lock, Unlock, Eye, Check, ZoomIn, ZoomOut, Maximize2, X, ChevronDown, ChevronUp, Youtube
+  Pause, Play, Sparkles, Lock, Unlock, Eye, Check, ZoomIn, ZoomOut, Maximize2, X, ChevronDown, ChevronUp, Youtube, Cookie
 } from 'lucide-react';
+import { 
+  getCookieConsent, 
+  setCookieConsent, 
+  saveAppliedSettings, 
+  getStoredSettings, 
+  clearStoredSettings, 
+  CookieConsent 
+} from './lib/cookies';
 import { ModelParams, PrinterSettings, TextureType, DEFAULT_MODEL_PARAMS, DEFAULT_PRINTER_SETTINGS } from './lib/types';
 import { RESTRICT_SETTINGS_ACCESS, YOUTUBE_CHANNEL_URL, PASTE_RECIPE_PDF_URL, PASTE_RECIPE_PDF_FILE_NAME, getPdfUrl } from './parameters/index';
 import { generateGCode, generateTestFlowGCode } from './lib/gcode';
@@ -88,6 +97,22 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [isSettingsAuthModalOpen, setIsSettingsAuthModalOpen] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [cookieConsent, setCookieConsentState] = useState<CookieConsent>(() => getCookieConsent());
+  const [showCookieModal, setShowCookieModal] = useState(false);
+
+  const handleAcceptCookies = () => {
+    setCookieConsent('accepted');
+    setCookieConsentState('accepted');
+    saveAppliedSettings(settings, params);
+    setShowCookieModal(false);
+  };
+
+  const handleRejectCookies = () => {
+    setCookieConsent('rejected');
+    setCookieConsentState('rejected');
+    clearStoredSettings();
+    setShowCookieModal(false);
+  };
   const [startGcodeCollapsed, setStartGcodeCollapsed] = useState(true);
   const [endGcodeCollapsed, setEndGcodeCollapsed] = useState(true);
   const [isSmileyActive, setIsSmileyActive] = useState(true);
@@ -242,6 +267,24 @@ export default function App() {
   useEffect(() => {
     setActiveTab('model');
     setIsSidebarCollapsed(false);
+
+    // Cookie preferences & restoring applied settings
+    const consent = getCookieConsent();
+    if (consent === null) {
+      // First-time access: display cookie preferences popup
+      setShowCookieModal(true);
+    } else if (consent === 'accepted') {
+      const stored = getStoredSettings();
+      if (stored) {
+        if (stored.settings) {
+          setSettings((prev) => ({ ...prev, ...stored.settings }));
+          setLocalSettings((prev) => ({ ...prev, ...stored.settings }));
+        }
+        if (stored.params) {
+          setParams((prev) => ({ ...prev, ...stored.params }));
+        }
+      }
+    }
   }, []);
 
   // Use deferred params to prevent the 3D viewer from blocking the input thread
@@ -1459,6 +1502,7 @@ export default function App() {
                               }
                             }
                             setParams(nextParams);
+                            saveAppliedSettings(updated, nextParams);
                             setShowSettings(false);
                           }}
                           className="w-full h-8 bg-amber-600 hover:bg-amber-500 text-white border border-amber-700 font-extrabold rounded-lg transition-all shadow-md flex items-center justify-center gap-1.5 uppercase tracking-widest text-[9px] active:scale-98 cursor-pointer text-center"
@@ -2448,6 +2492,53 @@ export default function App() {
                         </div>
 
 
+                      </section>
+
+                      {/* Section 4: Cookie Preferences */}
+                      <section id="subsec-cookie-preferences-container" className="rounded-3xl p-5 border-[3px] transition-all duration-300 relative bg-[#FAF8F5] border-amber-600">
+                        <div className="flex justify-between items-center mb-3 border-b border-stone-200/55 pb-1.5">
+                          <h4 className="text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-1.5 text-amber-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0 inline-block" />
+                            <Cookie className="w-3.5 h-3.5 text-amber-600" />
+                            {language === 'cy' ? 'Dewisiadau Cwcis' : 'Cookie Preferences'}
+                          </h4>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[11px] font-bold text-stone-700">
+                              {language === 'cy' ? 'Statws Cwcis:' : 'Cookie Status:'}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
+                              cookieConsent === 'accepted'
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                : cookieConsent === 'rejected'
+                                  ? 'bg-stone-200 text-stone-800 border border-stone-300'
+                                  : 'bg-amber-100 text-amber-800 border border-amber-300'
+                            }`}>
+                              {cookieConsent === 'accepted'
+                                ? (language === 'cy' ? "Derbyniwyd (Cofio Gosodiadau)" : 'Accepted (Saving Settings)')
+                                : cookieConsent === 'rejected'
+                                  ? (language === 'cy' ? 'Gwrthodwyd (Heb Arbed)' : 'Rejected (Settings Not Saved)')
+                                  : (language === 'cy' ? 'Heb ei Ddewis' : 'Not Chosen')}
+                            </span>
+                          </div>
+
+                          <p className="text-[10px] text-stone-600 leading-relaxed">
+                            {language === 'cy'
+                              ? "Mae cwcis yn caniatáu i'r rhaglen gofio'r gosodiadau diwethaf a weithredwyd ar gyfer ymweliadau yn y dyfodol. Gallwch newid eich dewis ar unrhyw adeg."
+                              : 'Cookies allow the app to remember the last settings applied for future visits. You can change your choice at any time.'}
+                          </p>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowCookieModal(true)}
+                            className="w-full h-8 bg-stone-800 hover:bg-stone-900 active:bg-black text-white text-[9.5px] font-extrabold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                          >
+                            <Cookie className="w-3.5 h-3.5 text-amber-400" />
+                            <span>{language === 'cy' ? 'Newid Dewisiadau Cwcis' : 'Change Cookie Preferences'}</span>
+                          </button>
+                        </div>
                       </section>
                     </div>
                   </div>                ) : activeTab === 'model' ? (
@@ -3865,6 +3956,16 @@ export default function App() {
       <AboutAppModal
         isOpen={showAboutModal}
         onClose={() => setShowAboutModal(false)}
+        onOpenCookiePreferences={() => setShowCookieModal(true)}
+        language={language}
+      />
+
+      <CookiePreferencesModal
+        isOpen={showCookieModal}
+        currentConsent={cookieConsent}
+        onAccept={handleAcceptCookies}
+        onReject={handleRejectCookies}
+        onClose={cookieConsent !== null ? () => setShowCookieModal(false) : undefined}
         language={language}
       />
     </div>

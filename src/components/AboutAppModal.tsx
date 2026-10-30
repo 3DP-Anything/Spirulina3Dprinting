@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Info, X, Send, CheckCircle2, Loader2, MessageSquare, AlertCircle, Sparkles, RotateCcw } from 'lucide-react';
+import { Info, X, Send, CheckCircle2, Loader2, MessageSquare, AlertCircle, Sparkles, RotateCcw, Cookie } from 'lucide-react';
 import { FEEDBACK_EMAIL_ADDRESS, FEEDBACK_SERVICE_ENDPOINT } from '../parameters/index';
 
 interface AboutAppModalProps {
   isOpen: boolean;
   onClose: () => void;
   language: 'en' | 'cy';
+  onOpenCookiePreferences?: () => void;
 }
 
 export const AboutAppModal: React.FC<AboutAppModalProps> = ({
   isOpen,
   onClose,
   language,
+  onOpenCookiePreferences,
 }) => {
   // Form state
   const [senderName, setSenderName] = useState('');
@@ -34,6 +36,35 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!senderName.trim()) {
+      setErrorMessage(
+        language === 'cy'
+          ? 'Rhowch eich enw cyn cyflwyno.'
+          : 'Please enter your name before submitting.'
+      );
+      return;
+    }
+
+    const emailTrimmed = senderEmail.trim();
+    if (!emailTrimmed) {
+      setErrorMessage(
+        language === 'cy'
+          ? 'Rhowch eich cyfeiriad e-bost cyn cyflwyno.'
+          : 'Please enter your email address before submitting.'
+      );
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+      setErrorMessage(
+        language === 'cy'
+          ? 'Rhowch gyfeiriad e-bost dilys (e.e. enw@enghraifft.com).'
+          : 'Please enter a valid email address (e.g. name@example.com).'
+      );
+      return;
+    }
+
     if (!message.trim()) {
       setErrorMessage(
         language === 'cy'
@@ -238,6 +269,25 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
                     </span>
                   </li>
                 </ul>
+
+                {onOpenCookiePreferences && (
+                  <div className="pt-3 mt-3 border-t border-stone-800 flex items-center justify-between">
+                    <span className="text-[11px] text-stone-400 flex items-center gap-1.5">
+                      <Cookie className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{language === 'cy' ? 'Dewisiadau Cwcis a Phreifatrwydd' : 'Cookie & Privacy Preferences'}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenCookiePreferences();
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white text-[10.5px] font-semibold border border-stone-700 transition-all cursor-pointer"
+                    >
+                      {language === 'cy' ? 'Rheoli Cwcis' : 'Manage Cookies'}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Feedback Form Section */}
@@ -300,13 +350,14 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
                     )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {/* Name input */}
+                      {/* Name input (Compulsory) */}
                       <div>
-                        <label className="block text-[11px] font-medium text-stone-400 mb-1">
-                          {language === 'cy' ? 'Eich enw (dewisol)' : 'Your name (optional)'}
+                        <label className="block text-[11px] font-medium text-stone-300 mb-1">
+                          {language === 'cy' ? 'Eich Enw *' : 'Your Name *'}
                         </label>
                         <input
                           type="text"
+                          required
                           value={senderName}
                           onChange={(e) => setSenderName(e.target.value)}
                           placeholder={language === 'cy' ? 'e.e. Jane Doe' : 'e.g. Jane Doe'}
@@ -314,13 +365,14 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
                         />
                       </div>
 
-                      {/* Email input */}
+                      {/* Email input (Compulsory) */}
                       <div>
-                        <label className="block text-[11px] font-medium text-stone-400 mb-1">
-                          {language === 'cy' ? 'E-bost ar gyfer ateb (dewisol)' : 'Your email for replies (optional)'}
+                        <label className="block text-[11px] font-medium text-stone-300 mb-1">
+                          {language === 'cy' ? 'Eich E-bost *' : 'Your Email *'}
                         </label>
                         <input
                           type="email"
+                          required
                           value={senderEmail}
                           onChange={(e) => setSenderEmail(e.target.value)}
                           placeholder={language === 'cy' ? 'e.e. jane@example.com' : 'e.g. jane@example.com'}
@@ -356,8 +408,8 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
 
                     {/* Message textarea */}
                     <div>
-                      <label className="block text-[11px] font-medium text-stone-400 mb-1">
-                        {language === 'cy' ? 'Eich neges / awgrym *' : 'Your message or suggestion *'}
+                      <label className="block text-[11px] font-medium text-stone-300 mb-1">
+                        {language === 'cy' ? 'Eich Neges / Awgrym *' : 'Your Message or Suggestion *'}
                       </label>
                       <textarea
                         required
@@ -384,7 +436,7 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
                       </button>
                       <button
                         type="submit"
-                        disabled={isSubmitting || !message.trim()}
+                        disabled={isSubmitting || !senderName.trim() || !senderEmail.trim() || !message.trim()}
                         className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95"
                       >
                         {isSubmitting ? (
