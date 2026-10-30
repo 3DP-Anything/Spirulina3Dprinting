@@ -41,6 +41,7 @@ export const translations = {
     deactivateAssistant: "Deactivate Assistant",
     reactivateAssistant: "Reactivate Assistant",
     settingsTitle: "Settings",
+    aboutAppTitle: "About this app",
 
     // Size section
     secSize: "Size",
@@ -196,6 +197,7 @@ export const translations = {
     deactivateAssistant: "Analluogi Cynorthwyydd",
     reactivateAssistant: "Ailactifadu Cynorthwyydd",
     settingsTitle: "Gosodiadau",
+    aboutAppTitle: "Gwybodaeth am y rhaglen",
 
     // Size section
     secSize: "Maint",

@@ -167,6 +167,19 @@ export const FLOW_TEST_PAPER_PDF_URL: string = getPdfUrl(FLOW_TEST_PAPER_PDF_FIL
 export const YOUTUBE_CHANNEL_URL: string = 'https://www.youtube.com/channel/UC3OZzK21wwyKdjhjy2GVPdw';
 
 // ==============================================================================
+// FEEDBACK & CONTACT CONFIGURATION
+// ==============================================================================
+/**
+ * FEEDBACK_EMAIL_ADDRESS
+ * 
+ * Recipient email address for constructive feedback, bug reports, and suggestions
+ * submitted via the "About this app" info popup modal.
+ * This address is deliberately kept hidden from the visible user interface.
+ * You can alter this email address directly here to route submissions to another recipient.
+ */
+export const FEEDBACK_EMAIL_ADDRESS: string = 'lacan@cardiff.ac.uk';
+
+// ==============================================================================
 // 1. MODEL PARAMETERS REGISTRY
 // ==============================================================================
 

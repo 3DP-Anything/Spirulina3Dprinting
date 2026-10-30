@@ -14,6 +14,7 @@ import { ParameterControls } from './components/ParameterControls';
 import { GCodePlayerControls } from './components/GCodePlayerControls';
 import { GCodeTextureControls } from './components/GCodeTextureControls';
 import { SettingsAccessModal } from './components/SettingsAccessModal';
+import { AboutAppModal } from './components/AboutAppModal';
 import { PrintFlowTestSection } from './components/PrintFlowTestSection';
 import { CursorSmiley } from './components/CursorSmiley';
 import { ModelNameInput } from './components/ModelNameInput';
@@ -22,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-  Download, Settings, Box, FileCode, Beaker, Upload, Save, FileDown, Route, Loader2, RotateCcw,
+  Download, Settings, Info, Box, FileCode, Beaker, Upload, Save, FileDown, Route, Loader2, RotateCcw,
   PanelLeftClose, PanelLeftOpen, ChevronLeft, ChevronRight, AlertCircle, Smile, FileJson, Camera, FileText, RefreshCw,
   Pause, Play, Sparkles, Lock, Unlock, Eye, Check, ZoomIn, ZoomOut, Maximize2, X, ChevronDown, ChevronUp, Youtube
 } from 'lucide-react';
@@ -86,6 +87,7 @@ export default function App() {
   const [localSettings, setLocalSettings] = useState<PrinterSettings>(DEFAULT_PRINTER_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [isSettingsAuthModalOpen, setIsSettingsAuthModalOpen] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const [startGcodeCollapsed, setStartGcodeCollapsed] = useState(true);
   const [endGcodeCollapsed, setEndGcodeCollapsed] = useState(true);
   const [isSmileyActive, setIsSmileyActive] = useState(true);
@@ -1319,6 +1321,17 @@ export default function App() {
               title={t('settingsTitle')}
             >
               <Settings className="w-4 h-4 shrink-0 text-white" />
+            </button>
+
+            {/* Info / About App button */}
+            <button 
+              id="info-button"
+              onClick={() => setShowAboutModal(true)}
+              className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
+              title={t('aboutAppTitle')}
+              aria-label="About this app"
+            >
+              <Info className="w-4 h-4 shrink-0 text-white group-hover:text-emerald-300 transition-colors" />
             </button>
           </div>
         </div>
@@ -3846,6 +3859,12 @@ export default function App() {
           setShowSettings(true);
           setIsSidebarCollapsed(false);
         }}
+        language={language}
+      />
+
+      <AboutAppModal
+        isOpen={showAboutModal}
+        onClose={() => setShowAboutModal(false)}
         language={language}
       />
     </div>
