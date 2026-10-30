@@ -27,7 +27,7 @@ import {
   Pause, Play, Sparkles, Lock, Unlock, Eye, Check, ZoomIn, ZoomOut, Maximize2, X, ChevronDown, ChevronUp, Youtube
 } from 'lucide-react';
 import { ModelParams, PrinterSettings, TextureType, DEFAULT_MODEL_PARAMS, DEFAULT_PRINTER_SETTINGS } from './lib/types';
-import { RESTRICT_SETTINGS_ACCESS, YOUTUBE_CHANNEL_URL, PASTE_RECIPE_PDF_URL } from './parameters/index';
+import { RESTRICT_SETTINGS_ACCESS, YOUTUBE_CHANNEL_URL, PASTE_RECIPE_PDF_URL, PASTE_RECIPE_PDF_FILE_NAME, getPdfUrl } from './parameters/index';
 import { generateGCode, generateTestFlowGCode } from './lib/gcode';
 import { downloadGCode, exportToSTL } from './lib/export';
 import { parseGCode, getGCodeExplanation, formatTime } from './lib/gcode-parser';
@@ -1233,6 +1233,14 @@ export default function App() {
             <a
               id="recipe-cauldron-link"
               href={PASTE_RECIPE_PDF_URL}
+              onPointerDown={(e) => {
+                const fresh = getPdfUrl(PASTE_RECIPE_PDF_FILE_NAME);
+                e.currentTarget.href = fresh;
+              }}
+              onClick={(e) => {
+                const fresh = getPdfUrl(PASTE_RECIPE_PDF_FILE_NAME);
+                e.currentTarget.href = fresh;
+              }}
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"

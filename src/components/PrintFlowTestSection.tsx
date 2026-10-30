@@ -3,7 +3,7 @@ import { Download, Sliders, RotateCcw, FileText } from 'lucide-react';
 import { PrinterSettings } from '../lib/types';
 import { getTestFlowLoops, generateTestFlowGCode } from '../lib/test-flow';
 import { downloadGCode } from '../lib/export';
-import { TEST_FLOW_BASE_GAP_MULTIPLIER, TEST_FLOW_WALL_GAP_MULTIPLIER, DEFAULT_PRINTER_SETTINGS, FLOW_TEST_PAPER_PDF_URL } from '../parameters/index';
+import { TEST_FLOW_BASE_GAP_MULTIPLIER, TEST_FLOW_WALL_GAP_MULTIPLIER, DEFAULT_PRINTER_SETTINGS, FLOW_TEST_PAPER_PDF_URL, FLOW_TEST_PAPER_PDF_FILE_NAME, getPdfUrl } from '../parameters/index';
 
 interface PrintFlowTestSectionProps {
   settings: PrinterSettings;
@@ -452,6 +452,14 @@ export const PrintFlowTestSection: React.FC<PrintFlowTestSectionProps> = ({
         <a
           id="btn-flow-test-paper-pdf"
           href={FLOW_TEST_PAPER_PDF_URL}
+          onPointerDown={(e) => {
+            const fresh = getPdfUrl(FLOW_TEST_PAPER_PDF_FILE_NAME);
+            e.currentTarget.href = fresh;
+          }}
+          onClick={(e) => {
+            const fresh = getPdfUrl(FLOW_TEST_PAPER_PDF_FILE_NAME);
+            e.currentTarget.href = fresh;
+          }}
           target="_blank"
           rel="noopener noreferrer"
           className="w-full h-8 bg-white hover:bg-teal-50 text-teal-800 border border-teal-300 hover:border-teal-400 rounded-lg text-[9.5px] font-bold tracking-wide transition-all shadow-2xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 mt-2"

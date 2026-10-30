@@ -99,13 +99,6 @@ export const TEST_FLOW_Y_OFFSET: number = 5.0;
 export const PASTE_RECIPE_PDF_FILE_NAME: string = 'Spirulina 3D Printing Paste Recipe 14-10-2026.pdf';
 
 /**
- * PASTE_RECIPE_PDF_URL
- * 
- * Web path to access the recipe PDF. Automatically uses PASTE_RECIPE_PDF_FILE_NAME.
- */
-export const PASTE_RECIPE_PDF_URL: string = `${(import.meta as any)?.env?.BASE_URL || '/'}pdf/${encodeURIComponent(PASTE_RECIPE_PDF_FILE_NAME)}`;
-
-/**
  * FLOW_TEST_PAPER_PDF_FILE_NAME
  * 
  * File name of the flow test paper PDF located inside the /pdf folder.
@@ -116,11 +109,48 @@ export const PASTE_RECIPE_PDF_URL: string = `${(import.meta as any)?.env?.BASE_U
 export const FLOW_TEST_PAPER_PDF_FILE_NAME: string = 'Flow test paper.pdf';
 
 /**
+ * getPdfUrl
+ * 
+ * Dynamically resolves the full URL for a PDF file located inside the pdf/ directory.
+ * Accurately handles:
+ * - GitHub Pages repository subpaths (e.g. https://<user>.github.io/<repo>/ with or without trailing slash)
+ * - Navigation with/without trailing slash so repository root is not accidentally bypassed
+ * - Development server and custom domain hosting
+ */
+export function getPdfUrl(fileName: string): string {
+  const encodedName = encodeURIComponent(fileName);
+  if (typeof window === 'undefined') {
+    return `./pdf/${encodedName}`;
+  }
+
+  let pathname = window.location.pathname || '/';
+
+  // Strip file name if present (e.g. /index.html)
+  if (pathname.includes('.') && pathname.lastIndexOf('/') !== -1) {
+    pathname = pathname.substring(0, pathname.lastIndexOf('/') + 1);
+  }
+
+  // Ensure trailing slash so repository subpath is preserved
+  if (!pathname.endsWith('/')) {
+    pathname += '/';
+  }
+
+  return `${window.location.origin}${pathname}pdf/${encodedName}`;
+}
+
+/**
+ * PASTE_RECIPE_PDF_URL
+ * 
+ * Web path to access the recipe PDF. Automatically uses PASTE_RECIPE_PDF_FILE_NAME.
+ */
+export const PASTE_RECIPE_PDF_URL: string = getPdfUrl(PASTE_RECIPE_PDF_FILE_NAME);
+
+/**
  * FLOW_TEST_PAPER_PDF_URL
  * 
  * Web path to access the flow test paper PDF. Automatically uses FLOW_TEST_PAPER_PDF_FILE_NAME.
  */
-export const FLOW_TEST_PAPER_PDF_URL: string = `${(import.meta as any)?.env?.BASE_URL || '/'}pdf/${encodeURIComponent(FLOW_TEST_PAPER_PDF_FILE_NAME)}`;
+export const FLOW_TEST_PAPER_PDF_URL: string = getPdfUrl(FLOW_TEST_PAPER_PDF_FILE_NAME);
 
 
 // ==============================================================================
