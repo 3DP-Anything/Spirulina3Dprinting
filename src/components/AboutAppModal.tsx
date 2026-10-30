@@ -69,6 +69,7 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
       try {
         await fetch(targetEndpoint, {
           method: 'POST',
+          mode: isGoogleScript ? 'no-cors' : 'cors',
           headers: isGoogleScript
             ? { 'Content-Type': 'text/plain;charset=utf-8' }
             : { 'Content-Type': 'application/json', 'Accept': 'application/json' },
