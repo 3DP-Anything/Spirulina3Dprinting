@@ -15,6 +15,8 @@ import { GCodePlayerControls } from './components/GCodePlayerControls';
 import { GCodeTextureControls } from './components/GCodeTextureControls';
 import { SettingsAccessModal } from './components/SettingsAccessModal';
 import { AboutAppModal } from './components/AboutAppModal';
+import { MaintenanceModal } from './components/MaintenanceModal';
+import { ScrewdriverSpannerIcon } from './components/ScrewdriverSpannerIcon';
 import { CookiePreferencesModal } from './components/CookiePreferencesModal';
 import { PrintFlowTestSection } from './components/PrintFlowTestSection';
 import { CursorSmiley } from './components/CursorSmiley';
@@ -97,6 +99,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [isSettingsAuthModalOpen, setIsSettingsAuthModalOpen] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
   const [cookieConsent, setCookieConsentState] = useState<CookieConsent>(() => getCookieConsent());
   const [showCookieModal, setShowCookieModal] = useState(false);
 
@@ -1375,6 +1378,17 @@ export default function App() {
               aria-label="About this app"
             >
               <Info className="w-4 h-4 shrink-0 text-white group-hover:text-emerald-300 transition-colors" />
+            </button>
+
+            {/* Maintenance & Repair button */}
+            <button 
+              id="maintenance-button"
+              onClick={() => setShowMaintenanceModal(true)}
+              className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
+              title={t('maintenanceTitle')}
+              aria-label="Maintenance & Repair"
+            >
+              <ScrewdriverSpannerIcon className="w-4 h-4 shrink-0 text-white group-hover:text-amber-300 transition-colors" />
             </button>
           </div>
         </div>
@@ -3957,6 +3971,12 @@ export default function App() {
         isOpen={showAboutModal}
         onClose={() => setShowAboutModal(false)}
         onOpenCookiePreferences={() => setShowCookieModal(true)}
+        language={language}
+      />
+
+      <MaintenanceModal
+        isOpen={showMaintenanceModal}
+        onClose={() => setShowMaintenanceModal(false)}
         language={language}
       />
 

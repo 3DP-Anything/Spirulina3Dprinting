@@ -42,6 +42,7 @@ export const translations = {
     reactivateAssistant: "Reactivate Assistant",
     settingsTitle: "Settings",
     aboutAppTitle: "About this app",
+    maintenanceTitle: "Maintenance & Repair",
 
     // Size section
     secSize: "Size",
@@ -198,6 +199,7 @@ export const translations = {
     reactivateAssistant: "Ailactifadu Cynorthwyydd",
     settingsTitle: "Gosodiadau",
     aboutAppTitle: "Gwybodaeth am y rhaglen",
+    maintenanceTitle: "Cynnal a Chadw ac Atgyweirio",
 
     // Size section
     secSize: "Maint",
