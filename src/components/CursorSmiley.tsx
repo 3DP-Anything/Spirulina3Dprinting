@@ -3358,7 +3358,7 @@ export const CursorSmiley = ({
                 ? { type: "spring", stiffness: 120, damping: 20 }
                 : { type: "tween", ease: "circOut", duration: 0.22 }
             }
-            className="fixed z-[9999] select-none pointer-events-none w-[96px] h-[96px]"
+            className="fixed z-[90] select-none pointer-events-none w-[96px] h-[96px]"
           >
         {/* Rounded Tip Pointer Arrow Indicator */}
         {arrowConfig && (

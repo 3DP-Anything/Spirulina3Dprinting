@@ -348,7 +348,7 @@ export const PdfExplorerModal: React.FC<PdfExplorerModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-5 overflow-y-auto font-sans">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-5 overflow-y-auto font-sans">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}

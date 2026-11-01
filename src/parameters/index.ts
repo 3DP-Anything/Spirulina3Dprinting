@@ -43,17 +43,35 @@ export interface ParameterDefinition<T = any> {
 }
 
 // ==============================================================================
-// RESTRICTED SETTINGS ACCESS CONFIGURATION
+// 🔐 SETTINGS ACCESS SECURITY CONFIGURATION (TURN ON / OFF HERE)
 // ==============================================================================
 /**
  * RESTRICT_SETTINGS_ACCESS
  * 
- * Activate (true) or deactivate (false) restricted access to settings.
- * - When activated (true): clicking onto settings requires entering a 4-digit code
- *   matching the current device time (HHMM, e.g. 1342 if 13:42, 0921 if 9:21).
- * - When deactivated (false): settings opens immediately without asking for a code.
+ * 👉 TURN SETTINGS ACCESS CODE ON OR OFF HERE:
+ * 
+ * - Set to `true`  --> ON: Settings requires entering the 4-digit security code.
+ * - Set to `false` --> OFF: Settings opens immediately without requiring a code.
+ * 
+ * HOW THE ACCESS CODE WORKS:
+ * When ON (`true`), clicking the Settings button prompts the user for a 4-digit code.
+ * The code is the current device time in 24-hour format (HHMM, e.g. 1430 at 14:30, 0915 at 09:15).
+ * After entering the code, settings remains unlocked for the grace period set below
+ * (SETTINGS_ACCESS_GRACE_PERIOD_MINUTES), and a countdown displays below the Settings icon.
  */
-export const RESTRICT_SETTINGS_ACCESS: boolean = false;
+export const RESTRICT_SETTINGS_ACCESS: boolean = true;
+
+/**
+ * SETTINGS_ACCESS_GRACE_PERIOD_MINUTES
+ * 
+ * 👉 ADJUST HOW LONG SETTINGS STAYS UNLOCKED (IN MINUTES):
+ * 
+ * After entering a valid code, this is how many minutes the settings menu remains
+ * accessible without having to re-enter the code.
+ * A countdown is shown directly beneath the Settings icon in the top toolbar.
+ * Default: 10 minutes.
+ */
+export const SETTINGS_ACCESS_GRACE_PERIOD_MINUTES: number = 10;
 
 // ==============================================================================
 // PRINT FLOW TEST CONFIGURATION

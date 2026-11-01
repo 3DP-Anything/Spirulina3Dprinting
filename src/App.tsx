@@ -40,7 +40,7 @@ import {
   CookieConsent 
 } from './lib/cookies';
 import { ModelParams, PrinterSettings, TextureType, DEFAULT_MODEL_PARAMS, DEFAULT_PRINTER_SETTINGS } from './lib/types';
-import { RESTRICT_SETTINGS_ACCESS, YOUTUBE_CHANNEL_URL, PASTE_RECIPE_PDF_URL, PASTE_RECIPE_PDF_FILE_NAME, getPdfUrl } from './parameters/index';
+import { RESTRICT_SETTINGS_ACCESS, SETTINGS_ACCESS_GRACE_PERIOD_MINUTES, YOUTUBE_CHANNEL_URL, PASTE_RECIPE_PDF_URL, PASTE_RECIPE_PDF_FILE_NAME, getPdfUrl } from './parameters/index';
 import { generateGCode, generateTestFlowGCode } from './lib/gcode';
 import { downloadGCode, exportToSTL } from './lib/export';
 import { parseGCode, getGCodeExplanation, formatTime } from './lib/gcode-parser';
@@ -99,6 +99,81 @@ export default function App() {
   const [localSettings, setLocalSettings] = useState<PrinterSettings>(DEFAULT_PRINTER_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [isSettingsAuthModalOpen, setIsSettingsAuthModalOpen] = useState(false);
+  const [settingsUnlockedUntil, setSettingsUnlockedUntil] = useState<number | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('settings_unlocked_until');
+      if (saved) {
+        const time = parseInt(saved, 10);
+        if (time > Date.now()) return time;
+      }
+    } catch {}
+    return null;
+  });
+  const [remainingSettingsAuthSeconds, setRemainingSettingsAuthSeconds] = useState<number>(() => {
+    if (!RESTRICT_SETTINGS_ACCESS) return 0;
+    try {
+      const saved = sessionStorage.getItem('settings_unlocked_until');
+      if (saved) {
+        const time = parseInt(saved, 10);
+        const diff = Math.max(0, Math.ceil((time - Date.now()) / 1000));
+        return diff;
+      }
+    } catch {}
+    return 0;
+  });
+
+  // Active countdown effect for settings access grace period
+  useEffect(() => {
+    if (!settingsUnlockedUntil || !RESTRICT_SETTINGS_ACCESS) {
+      setRemainingSettingsAuthSeconds(0);
+      return;
+    }
+
+    const updateRemaining = () => {
+      const now = Date.now();
+      const diff = Math.max(0, Math.ceil((settingsUnlockedUntil - now) / 1000));
+      setRemainingSettingsAuthSeconds(diff);
+      if (diff <= 0) {
+        setSettingsUnlockedUntil(null);
+        try {
+          sessionStorage.removeItem('settings_unlocked_until');
+        } catch {}
+      }
+    };
+
+    updateRemaining();
+    const interval = setInterval(updateRemaining, 1000);
+    return () => clearInterval(interval);
+  }, [settingsUnlockedUntil]);
+
+  const formatCountdown = (totalSeconds: number) => {
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
+
+  const openSettings = () => {
+    const isRestricted = RESTRICT_SETTINGS_ACCESS;
+    const isUnlocked = settingsUnlockedUntil !== null && settingsUnlockedUntil > Date.now();
+    if (isRestricted && !isUnlocked) {
+      setIsSettingsAuthModalOpen(true);
+    } else {
+      setShowSettings(true);
+      setIsSidebarCollapsed(false);
+    }
+  };
+
+  const handleSettingsAuthSuccess = () => {
+    const expiry = Date.now() + SETTINGS_ACCESS_GRACE_PERIOD_MINUTES * 60 * 1000;
+    setSettingsUnlockedUntil(expiry);
+    setRemainingSettingsAuthSeconds(SETTINGS_ACCESS_GRACE_PERIOD_MINUTES * 60);
+    try {
+      sessionStorage.setItem('settings_unlocked_until', String(expiry));
+    } catch {}
+    setIsSettingsAuthModalOpen(false);
+    setShowSettings(true);
+    setIsSidebarCollapsed(false);
+  };
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
   const [showPdfExplorerModal, setShowPdfExplorerModal] = useState(false);
@@ -1277,78 +1352,77 @@ export default function App() {
               <input type="file" accept=".txt,.cup,.cfg,.json,*" onChange={importConfig} className="hidden" />
             </label>
           </div>
+        </div>
 
-          <div className="flex items-center justify-end gap-2 shrink-0 pr-1 select-none">
-            {/* PDF Documents & Explorer Button */}
-            <button
-              id="pdf-explorer-button"
-              onClick={() => setShowPdfExplorerModal(true)}
-              className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
-              title={language === 'cy' ? "Dogfennau PDF a Porwr Ffeiliau" : "PDF Documents & File Explorer"}
-              aria-label="PDF Documents & File Explorer"
-            >
-              <PdfIcon className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
-            </button>
+        {/* Right Action Utilities Toolbar (Always Visible, Unclipped) */}
+        <div className="flex items-center justify-end gap-2 shrink-0 pr-1 select-none overflow-visible">
+          {/* PDF Documents & Explorer Button */}
+          <button
+            id="pdf-explorer-button"
+            onClick={() => setShowPdfExplorerModal(true)}
+            className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
+            title={language === 'cy' ? "Dogfennau PDF a Porwr Ffeiliau" : "PDF Documents & File Explorer"}
+            aria-label="PDF Documents & File Explorer"
+          >
+            <PdfIcon className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
+          </button>
 
-            {/* YouTube Channel Link */}
-            <a
-              id="youtube-channel-link"
-              href={YOUTUBE_CHANNEL_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
-              title={language === 'cy' ? "Sianel YouTube" : "YouTube Channel"}
-              aria-label="YouTube Channel"
-            >
-              <Youtube className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
-            </a>
+          {/* YouTube Channel Link */}
+          <a
+            id="youtube-channel-link"
+            href={YOUTUBE_CHANNEL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
+            title={language === 'cy' ? "Sianel YouTube" : "YouTube Channel"}
+            aria-label="YouTube Channel"
+          >
+            <Youtube className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
+          </a>
 
-            {/* Welsh / British Toggle button */}
-            <button
-              id="language-toggle-container"
-              onClick={() => setLanguage(language === 'en' ? 'cy' : 'en')}
-              className={`group flex p-1 border rounded-xl transition-all cursor-pointer items-center gap-1.5 h-9 shrink-0 ${
-                highlightedSection === 'subsec_language_hover' || highlightedSection === 'subsec-language'
-                  ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
-                  : 'bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white'
-              }`}
-              title={language === 'en' ? "Newid i'r Gymraeg" : "Switch to English"}
-            >
-              <div className={`p-0.5 rounded-full ${language === 'cy' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
-                <WelshFlagSVG />
-              </div>
-              <div className={`p-0.5 rounded-full ${language === 'en' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
-                <UKFlagSVG />
-              </div>
-            </button>
+          {/* Welsh / British Toggle button */}
+          <button
+            id="language-toggle-container"
+            onClick={() => setLanguage(language === 'en' ? 'cy' : 'en')}
+            className={`group flex p-1 border rounded-xl transition-all cursor-pointer items-center gap-1.5 h-9 shrink-0 ${
+              highlightedSection === 'subsec_language_hover' || highlightedSection === 'subsec-language'
+                ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
+                : 'bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white'
+            }`}
+            title={language === 'en' ? "Newid i'r Gymraeg" : "Switch to English"}
+          >
+            <div className={`p-0.5 rounded-full ${language === 'cy' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
+              <WelshFlagSVG />
+            </div>
+            <div className={`p-0.5 rounded-full ${language === 'en' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
+              <UKFlagSVG />
+            </div>
+          </button>
 
-            <button 
-              id="smiley-toggle-container"
-              onClick={() => setIsSmileyActive(!isSmileyActive)}
-              className={`group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 ${
-                highlightedSection === 'subsec_smiley_hover' || highlightedSection === 'subsec-smiley'
-                  ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
-                  : isSmileyActive 
-                    ? 'bg-[#7F7F7F] border-[#404040] text-white shadow-[0_0_12px_rgba(255,255,255,0.15)] hover:bg-[#7F7F7F]/90' 
-                    : 'bg-[#7F7F7F] border-[#404040] text-white/70 hover:text-white hover:border-[#404040]/80'
-              }`}
-              title={isSmileyActive ? t('deactivateAssistant') : t('reactivateAssistant')}
-            >
-              <Smile className="w-4 h-4 shrink-0 text-white" />
-            </button>
+          <button 
+            id="smiley-toggle-container"
+            onClick={() => setIsSmileyActive(!isSmileyActive)}
+            className={`group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 ${
+              highlightedSection === 'subsec_smiley_hover' || highlightedSection === 'subsec-smiley'
+                ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
+                : isSmileyActive 
+                  ? 'bg-[#7F7F7F] border-[#404040] text-white shadow-[0_0_12px_rgba(255,255,255,0.15)] hover:bg-[#7F7F7F]/90' 
+                  : 'bg-[#7F7F7F] border-[#404040] text-white/70 hover:text-white hover:border-[#404040]/80'
+            }`}
+            title={isSmileyActive ? t('deactivateAssistant') : t('reactivateAssistant')}
+          >
+            <Smile className="w-4 h-4 shrink-0 text-white" />
+          </button>
+
+          {/* Settings button with countdown below */}
+          <div className="relative flex flex-col items-center justify-center shrink-0 overflow-visible">
             <button 
               id="settings-button"
               onClick={() => {
                 if (showSettings) {
                   setShowSettings(false);
                 } else {
-                  const isRestricted = RESTRICT_SETTINGS_ACCESS;
-                  if (isRestricted) {
-                    setIsSettingsAuthModalOpen(true);
-                  } else {
-                    setShowSettings(true);
-                    setIsSidebarCollapsed(false);
-                  }
+                  openSettings();
                 }
               }}
               className={`group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.1)] cursor-pointer shrink-0 ${
@@ -1356,33 +1430,49 @@ export default function App() {
                   ? 'ring-4 ring-neutral-900/40 bg-[#7F7F7F] border-[#404040] text-white scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)]'
                   : 'bg-[#7F7F7F] border-[#404040] text-white'
               }`}
-              title={t('settingsTitle')}
+              title={
+                remainingSettingsAuthSeconds > 0 && RESTRICT_SETTINGS_ACCESS
+                  ? `${t('settingsTitle')} (${language === 'cy' ? 'Datgloi am' : 'Unlocked for'} ${formatCountdown(remainingSettingsAuthSeconds)})`
+                  : t('settingsTitle')
+              }
             >
               <Settings className="w-4 h-4 shrink-0 text-white" />
             </button>
 
-            {/* Info / About App button */}
-            <button 
-              id="info-button"
-              onClick={() => setShowAboutModal(true)}
-              className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
-              title={t('aboutAppTitle')}
-              aria-label="About this app"
-            >
-              <Info className="w-4 h-4 shrink-0 text-white group-hover:text-emerald-300 transition-colors" />
-            </button>
-
-            {/* Maintenance & Repair button */}
-            <button 
-              id="maintenance-button"
-              onClick={() => setShowMaintenanceModal(true)}
-              className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
-              title={t('maintenanceTitle')}
-              aria-label="Maintenance & Repair"
-            >
-              <ScrewdriverSpannerIcon className="w-4 h-4 shrink-0 text-white group-hover:text-amber-300 transition-colors" />
-            </button>
+            {/* Countdown below the settings icon - 50% larger, black font, no black background */}
+            {remainingSettingsAuthSeconds > 0 && RESTRICT_SETTINGS_ACCESS && (
+              <div 
+                className="absolute top-[38px] left-1/2 -translate-x-1/2 pointer-events-none select-none z-30 whitespace-nowrap text-center"
+                title={`${language === 'cy' ? "Amser ar ôl cyn bod angen cod" : "Time remaining before code is required"}: ${formatCountdown(remainingSettingsAuthSeconds)}`}
+              >
+                <span className="font-mono text-[12px] font-black text-black tracking-tight leading-none block">
+                  {formatCountdown(remainingSettingsAuthSeconds)}
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* Info / About App button */}
+          <button 
+            id="info-button"
+            onClick={() => setShowAboutModal(true)}
+            className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
+            title={t('aboutAppTitle')}
+            aria-label="About this app"
+          >
+            <Info className="w-4 h-4 shrink-0 text-white group-hover:text-emerald-300 transition-colors" />
+          </button>
+
+          {/* Maintenance & Repair button */}
+          <button 
+            id="maintenance-button"
+            onClick={() => setShowMaintenanceModal(true)}
+            className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
+            title={t('maintenanceTitle')}
+            aria-label="Maintenance & Repair"
+          >
+            <ScrewdriverSpannerIcon className="w-4 h-4 shrink-0 text-white group-hover:text-amber-300 transition-colors" />
+          </button>
         </div>
       </nav>
 
@@ -3390,7 +3480,7 @@ export default function App() {
 
       <AnimatePresence>
         {showNamePrompt && (
-          <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -3412,7 +3502,7 @@ export default function App() {
               
               <div className="space-y-4">
                 <input 
-                  type="text"
+                  type="text" 
                   placeholder={language === 'cy' ? 'Rhowch eich enw...' : 'Enter your name...'}
                   value={exportFileName}
                   onChange={(e) => setExportFileName(e.target.value)}
@@ -3453,7 +3543,7 @@ export default function App() {
 
       <AnimatePresence>
         {showSTLDialog && (
-          <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -3579,7 +3669,7 @@ export default function App() {
 
       <AnimatePresence>
         {showSaveModelDialog && (
-          <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -3936,13 +4026,7 @@ export default function App() {
             if (!show) {
               setShowSettings(false);
             } else {
-              const isRestricted = RESTRICT_SETTINGS_ACCESS;
-              if (isRestricted) {
-                setIsSettingsAuthModalOpen(true);
-              } else {
-                setShowSettings(true);
-                setIsSidebarCollapsed(false);
-              }
+              openSettings();
             }
           }}
         />
@@ -3951,12 +4035,9 @@ export default function App() {
       <SettingsAccessModal
         isOpen={isSettingsAuthModalOpen}
         onClose={() => setIsSettingsAuthModalOpen(false)}
-        onSuccess={() => {
-          setIsSettingsAuthModalOpen(false);
-          setShowSettings(true);
-          setIsSidebarCollapsed(false);
-        }}
+        onSuccess={handleSettingsAuthSuccess}
         language={language}
+        gracePeriodMinutes={SETTINGS_ACCESS_GRACE_PERIOD_MINUTES}
       />
 
       <AboutAppModal
