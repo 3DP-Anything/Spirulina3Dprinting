@@ -96,7 +96,7 @@ export const TEST_FLOW_Y_OFFSET: number = 5.0;
  * in a new browser tab so users can view, print, or download it.
  * You can alter this file name directly here if the document is updated or renamed.
  */
-export const PASTE_RECIPE_PDF_FILE_NAME: string = 'Spirulina 3D Printing Paste Recipe 14-10-2026.pdf';
+export const PASTE_RECIPE_PDF_FILE_NAME: string = 'Recipes/Spirulina 3D Printing Paste Recipe 14-10-2026.pdf';
 
 /**
  * FLOW_TEST_PAPER_PDF_FILE_NAME
@@ -106,21 +106,27 @@ export const PASTE_RECIPE_PDF_FILE_NAME: string = 'Spirulina 3D Printing Paste R
  * document in a new browser tab.
  * You can alter this file name directly here if the document is updated or renamed.
  */
-export const FLOW_TEST_PAPER_PDF_FILE_NAME: string = 'Flow test paper.pdf';
+export const FLOW_TEST_PAPER_PDF_FILE_NAME: string = 'Flow Test/Flow test paper.pdf';
 
 /**
  * getPdfUrl
  * 
  * Dynamically resolves the full URL for a PDF file located inside the pdf/ directory.
  * Accurately handles:
+ * - Subfolders within the pdf directory (e.g. Recipes/, Flow Tests/)
  * - GitHub Pages repository subpaths (e.g. https://<user>.github.io/<repo>/ with or without trailing slash)
  * - Navigation with/without trailing slash so repository root is not accidentally bypassed
  * - Development server and custom domain hosting
  */
 export function getPdfUrl(fileName: string): string {
-  const encodedName = encodeURIComponent(fileName);
+  const cleanPath = fileName.replace(/^\/+/, '');
+  const encodedPath = cleanPath
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+
   if (typeof window === 'undefined') {
-    return `./pdf/${encodedName}`;
+    return `./pdf/${encodedPath}`;
   }
 
   let pathname = window.location.pathname || '/';
@@ -135,7 +141,7 @@ export function getPdfUrl(fileName: string): string {
     pathname += '/';
   }
 
-  return `${window.location.origin}${pathname}pdf/${encodedName}`;
+  return `${window.location.origin}${pathname}pdf/${encodedPath}`;
 }
 
 /**

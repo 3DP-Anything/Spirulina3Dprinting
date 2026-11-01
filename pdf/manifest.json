@@ -1,0 +1,48 @@
+{
+  "name": "pdf",
+  "path": "",
+  "type": "folder",
+  "children": [
+    {
+      "name": "Flow Test",
+      "path": "Flow Test",
+      "type": "folder",
+      "children": [
+        {
+          "name": "Flow calibration test.pdf",
+          "path": "Flow Test/Flow calibration test.pdf",
+          "type": "file",
+          "size": 253314,
+          "updatedAt": "2026-11-01T15:24:29.087Z"
+        },
+        {
+          "name": "Flow test paper.pdf",
+          "path": "Flow Test/Flow test paper.pdf",
+          "type": "file",
+          "size": 13992887,
+          "updatedAt": "2026-11-01T15:24:29.086Z"
+        }
+      ]
+    },
+    {
+      "name": "Recipes",
+      "path": "Recipes",
+      "type": "folder",
+      "children": [
+        {
+          "name": "Spirulina 3D Printing Paste Recipe 14-10-2026.pdf",
+          "path": "Recipes/Spirulina 3D Printing Paste Recipe 14-10-2026.pdf",
+          "type": "file",
+          "size": 699468,
+          "updatedAt": "2026-11-01T15:24:29.087Z"
+        }
+      ]
+    },
+    {
+      "name": "Training",
+      "path": "Training",
+      "type": "folder",
+      "children": []
+    }
+  ]
+}

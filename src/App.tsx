@@ -17,11 +17,12 @@ import { SettingsAccessModal } from './components/SettingsAccessModal';
 import { AboutAppModal } from './components/AboutAppModal';
 import { MaintenanceModal } from './components/MaintenanceModal';
 import { ScrewdriverSpannerIcon } from './components/ScrewdriverSpannerIcon';
+import { PdfExplorerModal } from './components/PdfExplorerModal';
+import { PdfIcon } from './components/PdfIcon';
 import { CookiePreferencesModal } from './components/CookiePreferencesModal';
 import { PrintFlowTestSection } from './components/PrintFlowTestSection';
 import { CursorSmiley } from './components/CursorSmiley';
 import { ModelNameInput } from './components/ModelNameInput';
-import { CauldronIcon } from './components/CauldronIcon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -100,6 +101,7 @@ export default function App() {
   const [isSettingsAuthModalOpen, setIsSettingsAuthModalOpen] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
+  const [showPdfExplorerModal, setShowPdfExplorerModal] = useState(false);
   const [cookieConsent, setCookieConsentState] = useState<CookieConsent>(() => getCookieConsent());
   const [showCookieModal, setShowCookieModal] = useState(false);
 
@@ -1277,26 +1279,16 @@ export default function App() {
           </div>
 
           <div className="flex items-center justify-end gap-2 shrink-0 pr-1 select-none">
-            {/* Cauldron Recipe Link - Spirulina 3D Printing Paste Recipe */}
-            <a
-              id="recipe-cauldron-link"
-              href={PASTE_RECIPE_PDF_URL}
-              onPointerDown={(e) => {
-                const fresh = getPdfUrl(PASTE_RECIPE_PDF_FILE_NAME);
-                e.currentTarget.href = fresh;
-              }}
-              onClick={(e) => {
-                const fresh = getPdfUrl(PASTE_RECIPE_PDF_FILE_NAME);
-                e.currentTarget.href = fresh;
-              }}
-              target="_blank"
-              rel="noopener noreferrer"
+            {/* PDF Documents & Explorer Button */}
+            <button
+              id="pdf-explorer-button"
+              onClick={() => setShowPdfExplorerModal(true)}
               className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
-              title={language === 'cy' ? "Rysáit Past Argraffu 3D Spirulina (PDF)" : "Spirulina 3D Printing Paste Recipe (PDF)"}
-              aria-label="Spirulina 3D Printing Paste Recipe PDF"
+              title={language === 'cy' ? "Dogfennau PDF a Porwr Ffeiliau" : "PDF Documents & File Explorer"}
+              aria-label="PDF Documents & File Explorer"
             >
-              <CauldronIcon className="w-4 h-4 shrink-0 text-white group-hover:text-emerald-300 transition-colors" />
-            </a>
+              <PdfIcon className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
+            </button>
 
             {/* YouTube Channel Link */}
             <a
@@ -3977,6 +3969,12 @@ export default function App() {
       <MaintenanceModal
         isOpen={showMaintenanceModal}
         onClose={() => setShowMaintenanceModal(false)}
+        language={language}
+      />
+
+      <PdfExplorerModal
+        isOpen={showPdfExplorerModal}
+        onClose={() => setShowPdfExplorerModal(false)}
         language={language}
       />
 
