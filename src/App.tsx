@@ -1113,7 +1113,7 @@ export default function App() {
           'extrusionMultiplier', 'flow', 'separateFlow', 'wallFlow', 'baseFlow',
           'enableSkirt', 'skirtDistance', 'continuousExtrusion', 'compensateWallShrinkage', 'wallShrinkageDraft', 'scale', 'enableTexture', 'enableGcodeTexture', 'restrictSettingsAccess', 'testFlowBaseGapMultiplier', 'testFlowWallGapMultiplier',
           'testFlowBaseLineDistance', 'testFlowWallLineDistance', 'testFlowLineDistance',
-          'autoNameModel', 'eConstant', 'retractionDistance',
+          'autoNameModel', 'enableStl3mfExport', 'eConstant', 'retractionDistance',
           'lockRibDepth', 'lockRibWidth',
           'baseLayers', 'wallCount', 'vaseMode', 'startGcode', 'endGcode', 'allowCustomSize',
           'defaultWidth', 'defaultHeight', 'maxWidth', 'maxHeight',
@@ -2643,6 +2643,72 @@ export default function App() {
 
                       </section>
 
+                      {/* Section 3: Saving Options */}
+                      <section id="subsec-saving-options-container" className="rounded-3xl p-5 border-[3px] transition-all duration-300 relative bg-[#FAF8F5] border-emerald-600">
+                        <div className="flex justify-between items-center mb-3 border-b border-stone-200/55 pb-1.5">
+                          <h4 className="text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-1.5 text-emerald-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0 inline-block" />
+                            <Save className="w-3.5 h-3.5 text-emerald-600" />
+                            {language === 'cy' ? 'Opsiynau Cadw' : 'Saving options'}
+                          </h4>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setLocalSettings({
+                                ...localSettings,
+                                enableStl3mfExport: DEFAULT_PRINTER_SETTINGS.enableStl3mfExport ?? false,
+                              });
+                            }}
+                            className="p-1 hover:bg-emerald-600/10 rounded-md text-emerald-700 transition-all cursor-pointer flex items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wider h-6 border border-emerald-600/20 px-1.5 shrink-0"
+                            title={language === 'cy' ? "Ailosod Opsiynau Cadw" : "Reset Saving Options"}
+                          >
+                            <RotateCcw className="w-2.5 h-2.5" />
+                            <span>{language === 'cy' ? 'Ailosod' : 'Reset'}</span>
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {/* STL / 3MF Saving Option Toggle (default: off) */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 pr-2">
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${localSettings.enableStl3mfExport ? 'bg-emerald-600' : 'bg-rose-500'}`} />
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-[9px] font-black uppercase text-stone-700 tracking-wider font-sans">
+                                  {language === 'cy' ? 'Opsiwn Cadw STL / 3MF' : 'STL / 3MF Saving Option'}
+                                </span>
+                                <span className="text-[7.5px] font-bold uppercase text-stone-400 tracking-wide">
+                                  {language === 'cy' ? 'Dangos neu guddio opsiynau cadw ffeiliau .stl a .3mf yn y ddewislen gadw' : 'Show or hide .stl and .3mf saving options in the save menu'}
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextVal = !localSettings.enableStl3mfExport;
+                                setLocalSettings({
+                                  ...localSettings,
+                                  enableStl3mfExport: nextVal
+                                });
+                              }}
+                              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                localSettings.enableStl3mfExport ? 'bg-emerald-600' : 'bg-rose-500'
+                              }`}
+                              title={
+                                localSettings.enableStl3mfExport
+                                  ? (language === 'cy' ? "Opsiwn STL/3MF wedi'i alluogi (Ymlaen)" : "STL/3MF option enabled (On)")
+                                  : (language === 'cy' ? "Opsiwn STL/3MF wedi'i analluogi (Diffodd)" : "STL/3MF option disabled (Off)")
+                              }
+                            >
+                              <span
+                                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                  localSettings.enableStl3mfExport ? 'translate-x-4' : 'translate-x-0'
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      </section>
+
                       {/* Section 4: Cookie Preferences */}
                       <section id="subsec-cookie-preferences-container" className="rounded-3xl p-5 border-[3px] transition-all duration-300 relative bg-[#FAF8F5] border-amber-600">
                         <div className="flex justify-between items-center mb-3 border-b border-stone-200/55 pb-1.5">
@@ -3098,194 +3164,196 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Model Subsection 2 (.STL for 3D Printing) */}
-                      <div 
-                        id="subsec-save-model-stl-container" 
-                        className={`rounded-xl p-2.5 pb-2 border-2 transition-all duration-300 relative ${
-                          highlightedSection === 'subsec-save-model-stl'
-                            ? 'ring-4 ring-emerald-500/50 bg-[#FAF8F5] border-emerald-500 scale-[1.01] shadow-[0_0_20px_rgba(21,128,61,0.25)]'
-                            : 'bg-[#FAF8F5] border-emerald-500'
-                        }`}
-                      >
-                        <div className="text-[10px] font-black uppercase tracking-wider pb-1 border-b border-stone-200 flex items-center gap-1.5 text-emerald-600">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                          {language === 'cy' ? 'Model 3D (Argraffu 3D ffeil .stl/.3mf)' : '3D model (3D printing .stl/.3mf File)'}
-                        </div>
-                        
-                         <div className="space-y-2 mt-2">
-                          <div className="flex justify-between items-center px-1">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[9px] font-black uppercase text-stone-500 tracking-wider">{language === 'cy' ? 'Trwch' : 'thickness'}</span>
-                              <button 
-                                type="button" 
-                                onClick={() => setStlThickness(1.2)}
-                                title={language === 'cy' ? 'Ailosod Trwch' : 'Reset Thickness'}
-                                className="p-0.5 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-md transition-all cursor-pointer inline-flex items-center justify-center"
-                              >
-                                <RotateCcw className="w-3 h-3 text-stone-500" />
-                              </button>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <input 
-                                type="number"
-                                min="0.1"
-                                max="10.0"
-                                step="0.1"
-                                value={stlThickness} 
-                                onChange={(e) => {
-                                  const val = parseFloat(e.target.value);
-                                  if (!isNaN(val)) {
-                                    setStlThickness(val);
-                                  }
-                                }}
-                                className="w-14 text-right font-mono font-bold text-stone-950 bg-stone-100 border border-stone-200 px-1.5 py-0.5 rounded-md text-[10px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                              />
-                              <span className="text-[9px] font-bold text-stone-500 font-mono">mm</span>
-                            </div>
+                      {/* Model Subsection 2 (.STL for 3D Printing) - controlled by Settings > Saving Options */}
+                      {Boolean(settings.enableStl3mfExport) && (
+                        <div 
+                          id="subsec-save-model-stl-container" 
+                          className={`rounded-xl p-2.5 pb-2 border-2 transition-all duration-300 relative ${
+                            highlightedSection === 'subsec-save-model-stl'
+                              ? 'ring-4 ring-emerald-500/50 bg-[#FAF8F5] border-emerald-500 scale-[1.01] shadow-[0_0_20px_rgba(21,128,61,0.25)]'
+                              : 'bg-[#FAF8F5] border-emerald-500'
+                          }`}
+                        >
+                          <div className="text-[10px] font-black uppercase tracking-wider pb-1 border-b border-stone-200 flex items-center gap-1.5 text-emerald-600">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                            {language === 'cy' ? 'Model 3D (Argraffu 3D ffeil .stl/.3mf)' : '3D model (3D printing .stl/.3mf File)'}
                           </div>
-                          <input 
-                            type="range" 
-                            min="0.4" 
-                            max="5" 
-                            step="0.05" 
-                            value={stlThickness} 
-                            onChange={(e) => setStlThickness(parseFloat(e.target.value))}
-                            className="w-full h-1 bg-stone-200 rounded-lg cursor-pointer accent-emerald-600 animate-none mt-0.5"
-                          />
-
-                          {/* STL File Quality Slider */}
-                          <div className="space-y-0.5 pt-1 border-t border-stone-100 mt-1.5">
+                          
+                           <div className="space-y-2 mt-2">
                             <div className="flex justify-between items-center px-1">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[9px] font-black uppercase text-stone-500 tracking-wider">
-                                  {language === 'cy' ? 'Ansawdd (Ffasedu)' : 'Quality (Faceting)'}
-                                </span>
+                                <span className="text-[9px] font-black uppercase text-stone-500 tracking-wider">{language === 'cy' ? 'Trwch' : 'thickness'}</span>
                                 <button 
                                   type="button" 
-                                  onClick={() => setParams({ ...params, stlQuality: 1.0 })}
-                                  title={language === 'cy' ? 'Ailosod Ansawdd' : 'Reset Quality'}
-                                  className="p-0.5 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-md transition-all cursor-pointer inline-flex items-center justify-center animate-none"
+                                  onClick={() => setStlThickness(1.2)}
+                                  title={language === 'cy' ? 'Ailosod Trwch' : 'Reset Thickness'}
+                                  className="p-0.5 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-md transition-all cursor-pointer inline-flex items-center justify-center"
                                 >
                                   <RotateCcw className="w-3 h-3 text-stone-500" />
                                 </button>
                               </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[8px] font-mono font-bold text-stone-400 uppercase">
-                                  {getStlQualityLabel(params.stlQuality)}
-                                </span>
-                                <div className="flex items-center gap-0.5">
-                                  <input 
-                                    type="number"
-                                    min="0.1"
-                                    max="5.0"
-                                    step="0.05"
-                                    value={typeof params.stlQuality === 'number' ? parseFloat(params.stlQuality.toFixed(2)) : 1.0}
-                                    onChange={(e) => {
-                                      const parsed = parseFloat(e.target.value);
-                                      if (!isNaN(parsed)) {
-                                        setParams({ ...params, stlQuality: parsed });
-                                      }
-                                    }}
-                                    className="w-12 text-right font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-md text-[10px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                  />
-                                  <span className="text-[9px] font-bold text-emerald-500 font-mono">x</span>
-                                </div>
+                              <div className="flex items-center gap-1">
+                                <input 
+                                  type="number"
+                                  min="0.1"
+                                  max="10.0"
+                                  step="0.1"
+                                  value={stlThickness} 
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    if (!isNaN(val)) {
+                                      setStlThickness(val);
+                                    }
+                                  }}
+                                  className="w-14 text-right font-mono font-bold text-stone-950 bg-stone-100 border border-stone-200 px-1.5 py-0.5 rounded-md text-[10px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                />
+                                <span className="text-[9px] font-bold text-stone-500 font-mono">mm</span>
                               </div>
                             </div>
                             <input 
                               type="range" 
-                              min="0.3" 
-                              max="3.0" 
-                              step="0.01" 
-                              value={typeof params.stlQuality === 'number' ? params.stlQuality : params.stlQuality === 'low' ? 0.5 : params.stlQuality === 'high' ? 2.0 : 1.0} 
-                              onChange={(e) => {
-                                setParams({ ...params, stlQuality: parseFloat(e.target.value) });
-                              }}
+                              min="0.4" 
+                              max="5" 
+                              step="0.05" 
+                              value={stlThickness} 
+                              onChange={(e) => setStlThickness(parseFloat(e.target.value))}
                               className="w-full h-1 bg-stone-200 rounded-lg cursor-pointer accent-emerald-600 animate-none mt-0.5"
                             />
-                            <div className="flex justify-between px-1 text-[8px] font-black uppercase text-stone-400 font-sans mt-0.5 select-none">
-                              <span>{language === 'cy' ? 'Isel (0.3x)' : 'low (0.3x)'}</span>
-                              <span>{language === 'cy' ? 'Diofyn (1.0x)' : 'default (1.0x)'}</span>
-                              <span>{language === 'cy' ? 'Uchel (3.0x)' : 'high (3.0x)'}</span>
-                            </div>
-                          </div>
 
-                          {/* Preview Buttons Grid */}
-                          <div className="grid grid-cols-2 gap-1.5 pt-1 mt-1">
-                            <button 
-                              type="button"
-                              onClick={() => {
-                                const nextVal = !isStlPreviewOn;
-                                setIsStlPreviewOn(nextVal);
-                                if (nextVal) setIs3mfPreviewOn(false);
-                              }}
-                              className={`h-7 border rounded-lg text-[8.5px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                                isStlPreviewOn 
-                                  ? 'bg-emerald-50 border-emerald-500 text-emerald-700 font-extrabold shadow-inner' 
-                                  : 'bg-white hover:bg-stone-50 border-stone-300 text-stone-600'
-                              }`}
-                            >
-                              <Eye className="w-3 h-3" />
-                              {isStlPreviewOn 
-                                ? (language === 'cy' ? 'Rhagolwg STL: AR' : 'STL Prev: ON')
-                                : (language === 'cy' ? 'Rhagolwg STL' : 'STL Prevw')}
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={() => {
-                                const nextVal = !is3mfPreviewOn;
-                                setIs3mfPreviewOn(nextVal);
-                                if (nextVal) setIsStlPreviewOn(false);
-                              }}
-                              className={`h-7 border rounded-lg text-[8.5px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                                is3mfPreviewOn 
-                                  ? 'bg-cyan-50 border-cyan-500 text-cyan-700 font-extrabold shadow-inner' 
-                                  : 'bg-white hover:bg-stone-50 border-stone-300 text-stone-600'
-                              }`}
-                            >
-                              <Eye className="w-3 h-3" />
-                              {is3mfPreviewOn 
-                                ? (language === 'cy' ? 'Rhagolwg 3MF: AR' : '3MF Prev: ON')
-                                : (language === 'cy' ? 'Rhagolwg 3MF' : '3MF Prevw')}
-                            </button>
-                          </div>
+                            {/* STL File Quality Slider */}
+                            <div className="space-y-0.5 pt-1 border-t border-stone-100 mt-1.5">
+                              <div className="flex justify-between items-center px-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[9px] font-black uppercase text-stone-500 tracking-wider">
+                                    {language === 'cy' ? 'Ansawdd (Ffasedu)' : 'Quality (Faceting)'}
+                                  </span>
+                                  <button 
+                                    type="button" 
+                                    onClick={() => setParams({ ...params, stlQuality: 1.0 })}
+                                    title={language === 'cy' ? 'Ailosod Ansawdd' : 'Reset Quality'}
+                                    className="p-0.5 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-md transition-all cursor-pointer inline-flex items-center justify-center animate-none"
+                                  >
+                                    <RotateCcw className="w-3 h-3 text-stone-500" />
+                                  </button>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[8px] font-mono font-bold text-stone-400 uppercase">
+                                    {getStlQualityLabel(params.stlQuality)}
+                                  </span>
+                                  <div className="flex items-center gap-0.5">
+                                    <input 
+                                      type="number"
+                                      min="0.1"
+                                      max="5.0"
+                                      step="0.05"
+                                      value={typeof params.stlQuality === 'number' ? parseFloat(params.stlQuality.toFixed(2)) : 1.0}
+                                      onChange={(e) => {
+                                        const parsed = parseFloat(e.target.value);
+                                        if (!isNaN(parsed)) {
+                                          setParams({ ...params, stlQuality: parsed });
+                                        }
+                                      }}
+                                      className="w-12 text-right font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-md text-[10px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                    />
+                                    <span className="text-[9px] font-bold text-emerald-500 font-mono">x</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <input 
+                                type="range" 
+                                min="0.3" 
+                                max="3.0" 
+                                step="0.01" 
+                                value={typeof params.stlQuality === 'number' ? params.stlQuality : params.stlQuality === 'low' ? 0.5 : params.stlQuality === 'high' ? 2.0 : 1.0} 
+                                onChange={(e) => {
+                                  setParams({ ...params, stlQuality: parseFloat(e.target.value) });
+                                }}
+                                className="w-full h-1 bg-stone-200 rounded-lg cursor-pointer accent-emerald-600 animate-none mt-0.5"
+                              />
+                              <div className="flex justify-between px-1 text-[8px] font-black uppercase text-stone-400 font-sans mt-0.5 select-none">
+                                <span>{language === 'cy' ? 'Isel (0.3x)' : 'low (0.3x)'}</span>
+                                <span>{language === 'cy' ? 'Diofyn (1.0x)' : 'default (1.0x)'}</span>
+                                <span>{language === 'cy' ? 'Uchel (3.0x)' : 'high (3.0x)'}</span>
+                              </div>
+                            </div>
 
-                          <div className="flex flex-col gap-1.5 mt-1.5 w-full pt-1 border-t border-stone-100">
-                            <div className="grid grid-cols-2 gap-1.5">
+                            {/* Preview Buttons Grid */}
+                            <div className="grid grid-cols-2 gap-1.5 pt-1 mt-1">
                               <button 
-                                onClick={() => confirmSTLExport(stlThickness)}
-                                className="h-8 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all font-semibold cursor-pointer shadow-md flex items-center justify-center gap-1 font-bold"
+                                type="button" 
+                                onClick={() => {
+                                  const nextVal = !isStlPreviewOn;
+                                  setIsStlPreviewOn(nextVal);
+                                  if (nextVal) setIs3mfPreviewOn(false);
+                                }}
+                                className={`h-7 border rounded-lg text-[8.5px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                                  isStlPreviewOn 
+                                    ? 'bg-emerald-50 border-emerald-500 text-emerald-700 font-extrabold shadow-inner' 
+                                    : 'bg-white hover:bg-stone-50 border-stone-300 text-stone-600'
+                                }`}
                               >
-                                <Save className="w-3 h-3 text-white" />
-                                {language === 'cy' ? 'STL' : 'STL'}
+                                <Eye className="w-3 h-3" />
+                                {isStlPreviewOn 
+                                  ? (language === 'cy' ? 'Rhagolwg STL: AR' : 'STL Prev: ON')
+                                  : (language === 'cy' ? 'Rhagolwg STL' : 'STL Prevw')}
                               </button>
                               <button 
-                                onClick={() => confirm3MFExport(stlThickness)}
-                                className="h-8 bg-cyan-700 hover:bg-cyan-800 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all font-semibold cursor-pointer shadow-md flex items-center justify-center gap-1 font-bold"
+                                type="button" 
+                                onClick={() => {
+                                  const nextVal = !is3mfPreviewOn;
+                                  setIs3mfPreviewOn(nextVal);
+                                  if (nextVal) setIsStlPreviewOn(false);
+                                }}
+                                className={`h-7 border rounded-lg text-[8.5px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                                  is3mfPreviewOn 
+                                    ? 'bg-cyan-50 border-cyan-500 text-cyan-700 font-extrabold shadow-inner' 
+                                    : 'bg-white hover:bg-stone-50 border-stone-300 text-stone-600'
+                                }`}
                               >
-                                <Save className="w-3 h-3 text-white" />
-                                {language === 'cy' ? '3MF' : '3MF'}
+                                <Eye className="w-3 h-3" />
+                                {is3mfPreviewOn 
+                                  ? (language === 'cy' ? 'Rhagolwg 3MF: AR' : '3MF Prev: ON')
+                                  : (language === 'cy' ? 'Rhagolwg 3MF' : '3MF Prevw')}
                               </button>
                             </div>
-                            <div className="grid grid-cols-2 gap-1.5">
-                              <button 
-                                onClick={() => confirmSTLExport(null)}
-                                className="h-8 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-lg text-[9px] font-black uppercase tracking-widest text-[#2E2E35] transition-all font-semibold cursor-pointer flex items-center justify-center gap-1"
-                              >
-                                <Save className="w-3 h-3 text-stone-600" />
-                                {language === 'cy' ? 'Arwyneb STL' : 'Surface STL'}
-                              </button>
-                              <button 
-                                onClick={() => confirm3MFExport(null)}
-                                className="h-8 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-lg text-[9px] font-black uppercase tracking-widest text-[#2E2E35] transition-all font-semibold cursor-pointer flex items-center justify-center gap-1"
-                              >
-                                <Save className="w-3 h-3 text-stone-600" />
-                                {language === 'cy' ? 'Arwyneb 3MF' : 'Surface 3MF'}
-                              </button>
+
+                            <div className="flex flex-col gap-1.5 mt-1.5 w-full pt-1 border-t border-stone-100">
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <button 
+                                  onClick={() => confirmSTLExport(stlThickness)}
+                                  className="h-8 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all font-semibold cursor-pointer shadow-md flex items-center justify-center gap-1 font-bold"
+                                >
+                                  <Save className="w-3 h-3 text-white" />
+                                  {language === 'cy' ? 'STL' : 'STL'}
+                                </button>
+                                <button 
+                                  onClick={() => confirm3MFExport(stlThickness)}
+                                  className="h-8 bg-cyan-700 hover:bg-cyan-800 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all font-semibold cursor-pointer shadow-md flex items-center justify-center gap-1 font-bold"
+                                >
+                                  <Save className="w-3 h-3 text-white" />
+                                  {language === 'cy' ? '3MF' : '3MF'}
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <button 
+                                  onClick={() => confirmSTLExport(null)}
+                                  className="h-8 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-lg text-[9px] font-black uppercase tracking-widest text-[#2E2E35] transition-all font-semibold cursor-pointer flex items-center justify-center gap-1"
+                                >
+                                  <Save className="w-3 h-3 text-stone-600" />
+                                  {language === 'cy' ? 'Arwyneb STL' : 'Surface STL'}
+                                </button>
+                                <button 
+                                  onClick={() => confirm3MFExport(null)}
+                                  className="h-8 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-lg text-[9px] font-black uppercase tracking-widest text-[#2E2E35] transition-all font-semibold cursor-pointer flex items-center justify-center gap-1"
+                                >
+                                  <Save className="w-3 h-3 text-stone-600" />
+                                  {language === 'cy' ? 'Arwyneb 3MF' : 'Surface 3MF'}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Technical Drawing Box Subsection */}
                       <div 

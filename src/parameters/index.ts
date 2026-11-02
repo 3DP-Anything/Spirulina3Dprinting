@@ -1276,6 +1276,14 @@ export const PRINTER_SETTINGS_REGISTRY: Record<string, ParameterDefinition> = {
     description: 'Automatically creates formatted model name written on the ceramic baseplate.',
     status: 'off',
   },
+  enableStl3mfExport: {
+    key: 'enableStl3mfExport',
+    name: 'Show STL / 3MF Saving Option',
+    category: 'printer_gcode',
+    defaultValue: false,
+    description: 'Shows or hides the 3D model (.stl / .3mf) saving option in the Save menu.',
+    status: 'off',
+  },
   startGcode: {
     key: 'startGcode',
     name: 'Start G-Code Script',
@@ -1439,6 +1447,7 @@ export const DEFAULT_PRINTER_SETTINGS: PrinterSettings = {
   approachSpeed: PRINTER_SETTINGS_REGISTRY.approachSpeed.defaultValue,
   exitSpeed: PRINTER_SETTINGS_REGISTRY.exitSpeed.defaultValue,
   autoNameModel: PRINTER_SETTINGS_REGISTRY.autoNameModel.defaultValue,
+  enableStl3mfExport: PRINTER_SETTINGS_REGISTRY.enableStl3mfExport.defaultValue,
   startGcode: PRINTER_SETTINGS_REGISTRY.startGcode.defaultValue,
   endGcode: PRINTER_SETTINGS_REGISTRY.endGcode.defaultValue,
   modelName: PRINTER_SETTINGS_REGISTRY.modelName.defaultValue,

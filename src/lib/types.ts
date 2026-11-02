@@ -43,6 +43,7 @@ export interface PrinterSettings {
   testFlowYOffset?: number; // Vertical shift in mm along Y axis for flow test (default: +5mm)
   approachSpeed?: number; // Approach speed at start of build in mm/s (default: 20)
   exitSpeed?: number; // Exit speed at end of build in mm/s (default: 20)
+  enableStl3mfExport?: boolean; // Option to show or hide the .stl/.3mf saving option in the save menu (default: false)
   autoNameModel?: boolean; // Option in model settings to name the model automatically (default: true)
   modelName?: string; // Model name for exported file
 }
