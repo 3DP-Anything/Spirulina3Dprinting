@@ -1277,7 +1277,7 @@ export default function App() {
                       setIsSidebarCollapsed(false);
                       setActiveTab(step.id as 'model' | 'gcode' | 'save');
                     }}
-                    className={`flex items-center gap-1.5 h-9 transition-all duration-300 rounded-xl cursor-pointer outline-hidden group ${
+                    className={`flex items-center gap-2 h-9 transition-all duration-300 rounded-xl cursor-pointer outline-hidden group ${
                       isStepHighlighted
                         ? `ring-4 ring-${step.id === 'model' ? 'emerald' : step.id === 'gcode' ? 'amber' : 'orange'}-600/50 bg-${step.id === 'model' ? 'emerald' : step.id === 'gcode' ? 'amber' : 'orange'}-100 border-${step.id === 'model' ? 'emerald' : step.id === 'gcode' ? 'amber' : 'orange'}-600 scale-105`
                         : step.active 
@@ -1287,7 +1287,7 @@ export default function App() {
                       isExpanded ? 'px-2.5 w-auto' : 'px-1.5 w-9 md:w-auto md:px-2.5'
                     }`}
                   >
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black transition-all duration-300 ${
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[13px] font-black leading-none transition-all duration-300 ${
                       isStepHighlighted
                         ? 'text-white'
                         : step.active 
@@ -1300,20 +1300,20 @@ export default function App() {
                     }}
                     >
                       {step.id === 'gcode' && isCalculating ? (
-                        <Loader2 className="w-3 h-3 animate-spin text-stone-600" />
+                        <Loader2 className="w-4 h-4 animate-spin text-white" strokeWidth={2} />
                       ) : step.stepNum}
                     </div>
-                    <div className={`flex flex-col items-start translate-y-[2px] transition-all duration-300 ${
-                      isExpanded ? 'flex opacity-100 max-w-[100px]' : 'hidden md:flex md:opacity-100 md:max-w-[100px] overflow-hidden'
+                    <div className={`flex flex-col items-start transition-all duration-300 ${
+                      isExpanded ? 'flex opacity-100 max-w-[130px]' : 'hidden md:flex md:opacity-100 md:max-w-[130px] overflow-hidden'
                     }`}>
                       <span 
-                        className="text-[8.5px] font-black uppercase tracking-widest transition-all duration-300 leading-none whitespace-nowrap"
+                        className="text-[11px] font-black uppercase tracking-wider transition-all duration-300 leading-none whitespace-nowrap"
                         style={{ color: step.active ? '#1c1917' : step.inactiveColor }}
                       >
                         {step.label}
                       </span>
                       {step.id === 'gcode' && isCalculating && (
-                        <div className="flex items-center gap-1 mt-0.5 w-[60px]">
+                        <div className="flex items-center gap-1 mt-1 w-[60px]">
                           <div className="w-full h-1 bg-stone-200 rounded-full overflow-hidden">
                             <motion.div 
                               className="h-full bg-gradient-to-r from-emerald-600 to-amber-600"
@@ -1344,7 +1344,7 @@ export default function App() {
                             className="-ml-1 first:ml-0"
                             style={{ color: chevronColor }}
                           >
-                            <ChevronRight className="w-4 h-4 shrink-0" strokeWidth={3} />
+                            <ChevronRight className="w-4 h-4 shrink-0" strokeWidth={2} />
                           </motion.div>
                         );
                       })}
@@ -1357,14 +1357,14 @@ export default function App() {
     
             <div id="import-container" className="flex items-center justify-center pl-2 shrink-0">
               <label
-                className={`flex items-center justify-center gap-2 h-9 border text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer px-3.5 shrink-0 ${
+                className={`flex items-center justify-center gap-2 h-9 border text-white font-black text-[10px] uppercase tracking-wider rounded-xl transition-all duration-300 cursor-pointer px-3.5 shrink-0 ${
                   highlightedSection === 'subsec_import_hover' || highlightedSection === 'subsec-import'
                     ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)]'
                     : 'bg-[#7F7F7F] border-[#404040] hover:bg-[#7F7F7F]/90 hover:border-[#404040]/80 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95'
                 }`}
                 title={language === 'cy' ? "Mewnforio ffeil paramedrau model (.cup)" : "Import model parameter file (.cup)"}
               >
-                <Upload className="w-3.5 h-3.5 text-white" />
+                <Upload className="w-5 h-5 text-white shrink-0" strokeWidth={1.5} />
                 <span>{language === 'cy' ? 'Mewnforio Model' : 'Import Model'}</span>
                 <input type="file" accept=".txt,.cup,.cfg,.json,*" onChange={importConfig} className="hidden" />
               </label>
@@ -1381,7 +1381,7 @@ export default function App() {
               title={language === 'cy' ? "Dogfennau PDF a Porwr Ffeiliau" : "PDF Documents & File Explorer"}
               aria-label="PDF Documents & File Explorer"
             >
-              <PdfIcon className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
+              <PdfIcon className="w-6 h-6 shrink-0 text-white group-hover:text-red-400 transition-colors" strokeWidth={1.5} />
             </button>
 
             {/* YouTube Channel Link */}
@@ -1394,7 +1394,7 @@ export default function App() {
               title={language === 'cy' ? "Sianel YouTube" : "YouTube Channel"}
               aria-label="YouTube Channel"
             >
-              <Youtube className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
+              <Youtube className="w-6 h-6 shrink-0 text-white group-hover:text-red-400 transition-colors" strokeWidth={1.5} />
             </a>
 
             {/* Welsh / British Toggle button */}
@@ -1409,10 +1409,10 @@ export default function App() {
               title={language === 'en' ? "Newid i'r Gymraeg" : "Switch to English"}
             >
               <div className={`p-0.5 rounded-full ${language === 'cy' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
-                <WelshFlagSVG />
+                <WelshFlagSVG className="w-6 h-6" />
               </div>
               <div className={`p-0.5 rounded-full ${language === 'en' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
-                <UKFlagSVG />
+                <UKFlagSVG className="w-6 h-6" />
               </div>
             </button>
 
@@ -1428,7 +1428,7 @@ export default function App() {
               }`}
               title={isSmileyActive ? t('deactivateAssistant') : t('reactivateAssistant')}
             >
-              <Smile className="w-4 h-4 shrink-0 text-white" />
+              <Smile className="w-6 h-6 shrink-0 text-white" strokeWidth={1.5} />
             </button>
 
             {/* Settings button with padlock and countdown below */}
@@ -1453,7 +1453,7 @@ export default function App() {
                     : t('settingsTitle')
                 }
               >
-                <Settings className="w-4 h-4 shrink-0 text-white" />
+                <Settings className="w-6 h-6 shrink-0 text-white" strokeWidth={1.5} />
               </button>
 
               {/* Padlock and countdown below the settings icon - lowered to top-[46px] to completely clear the circular outline */}
@@ -1512,7 +1512,7 @@ export default function App() {
               title={t('aboutAppTitle')}
               aria-label="About this app"
             >
-              <Info className="w-4 h-4 shrink-0 text-white group-hover:text-emerald-300 transition-colors" />
+              <Info className="w-6 h-6 shrink-0 text-white group-hover:text-emerald-300 transition-colors" strokeWidth={1.5} />
             </button>
 
             {/* Maintenance & Repair button */}
@@ -1523,7 +1523,7 @@ export default function App() {
               title={t('maintenanceTitle')}
               aria-label="Maintenance & Repair"
             >
-              <ScrewdriverSpannerIcon className="w-4 h-4 shrink-0 text-white group-hover:text-amber-300 transition-colors" />
+              <ScrewdriverSpannerIcon className="w-6 h-6 shrink-0 text-white group-hover:text-amber-300 transition-colors" strokeWidth={1.4} />
             </button>
           </div>
         </div>

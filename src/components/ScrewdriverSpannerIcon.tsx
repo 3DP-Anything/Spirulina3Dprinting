@@ -12,7 +12,7 @@ interface ScrewdriverSpannerIconProps {
  */
 export const ScrewdriverSpannerIcon: React.FC<ScrewdriverSpannerIconProps> = ({
   className = 'w-4 h-4',
-  strokeWidth = 1.8,
+  strokeWidth = 1.4,
 }) => {
   return (
     <svg

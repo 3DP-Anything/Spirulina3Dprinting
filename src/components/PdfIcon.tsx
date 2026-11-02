@@ -2,19 +2,20 @@ import React from 'react';
 
 interface PdfIconProps {
   className?: string;
+  strokeWidth?: number | string;
 }
 
 /**
  * Crisp PDF Document Icon for toolbars and buttons.
  * Displays a document sheet with folded corner and clean PDF styling.
  */
-export const PdfIcon: React.FC<PdfIconProps> = ({ className = 'w-4 h-4' }) => {
+export const PdfIcon: React.FC<PdfIconProps> = ({ className = 'w-4 h-4', strokeWidth = 1.5 }) => {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
