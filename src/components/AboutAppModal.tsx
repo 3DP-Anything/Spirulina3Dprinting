@@ -19,6 +19,7 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
   // Form state
   const [senderName, setSenderName] = useState('');
   const [senderEmail, setSenderEmail] = useState('');
+  const [senderSchool, setSenderSchool] = useState('');
   const [category, setCategory] = useState<'feedback' | 'bug' | 'suggestion' | 'other'>('feedback');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,6 +29,7 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
   const handleResetForm = () => {
     setSenderName('');
     setSenderEmail('');
+    setSenderSchool('');
     setCategory('feedback');
     setMessage('');
     setIsSubmitted(false);
@@ -65,6 +67,16 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
       return;
     }
 
+    const schoolTrimmed = senderSchool.trim();
+    if (!schoolTrimmed) {
+      setErrorMessage(
+        language === 'cy'
+          ? 'Rhowch enw eich ysgol cyn cyflwyno.'
+          : 'Please enter your school before submitting.'
+      );
+      return;
+    }
+
     if (!message.trim()) {
       setErrorMessage(
         language === 'cy'
@@ -83,11 +95,12 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
     const payload = {
       name: senderName.trim(),
       email: senderEmail.trim(),
+      school: schoolTrimmed,
       category: category,
       message: message.trim(),
       app: 'Spirulina 3D Printing Web App',
       submittedAt: new Date().toISOString(),
-      _subject: `[Spirulina App] ${category.toUpperCase()}: ${message.trim().slice(0, 40)}...`,
+      _subject: `[Spirulina App] [${schoolTrimmed}] ${category.toUpperCase()}: ${message.trim().slice(0, 40)}...`,
       _captcha: 'false',
       _template: 'table',
     };
@@ -345,6 +358,21 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
                       </div>
                     </div>
 
+                    {/* School input (Compulsory) */}
+                    <div>
+                      <label className="block text-[13px] font-semibold text-stone-700 mb-1.5 font-sans">
+                        {language === 'cy' ? 'Ysgol *' : 'School *'}
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={senderSchool}
+                        onChange={(e) => setSenderSchool(e.target.value)}
+                        placeholder={language === 'cy' ? 'e.e. Enw eich Ysgol Gynradd' : 'e.g. Primary School Name'}
+                        className="w-full h-10 px-3 bg-[#FAF8F5] border-2 border-stone-300 hover:border-stone-400 focus:border-emerald-600 focus:bg-white rounded-xl text-[13.5px] text-stone-900 placeholder-stone-400 font-normal font-sans outline-none transition-all shadow-inner"
+                      />
+                    </div>
+
                     {/* Category select */}
                     <div>
                       <label className="block text-[13px] font-semibold text-stone-700 mb-1.5 font-sans">
@@ -400,7 +428,7 @@ export const AboutAppModal: React.FC<AboutAppModalProps> = ({
                       </button>
                       <button
                         type="submit"
-                        disabled={isSubmitting || !senderName.trim() || !senderEmail.trim() || !message.trim()}
+                        disabled={isSubmitting || !senderName.trim() || !senderEmail.trim() || !senderSchool.trim() || !message.trim()}
                         className="px-6 py-2 rounded-xl bg-[#15803D] hover:bg-[#166534] active:bg-[#14532D] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 font-sans"
                       >
                         {isSubmitting ? (
