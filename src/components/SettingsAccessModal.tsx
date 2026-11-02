@@ -270,14 +270,14 @@ export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
                   </motion.div>
                 )}
 
-                {/* Touch Numpad */}
-                <div className="grid grid-cols-3 gap-2 w-full pt-1 select-none">
+                {/* Touch Numpad - Reduced to half size */}
+                <div className="grid grid-cols-3 gap-1.5 w-full max-w-[190px] sm:max-w-[210px] mx-auto pt-1 select-none">
                   {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
                     <button
                       key={num}
                       type="button"
                       onClick={() => handleDigitClick(num)}
-                      className="h-11 sm:h-12 rounded-xl bg-stone-100 hover:bg-stone-200 active:bg-stone-300 border border-stone-300 text-stone-800 font-mono text-lg font-bold transition-all shadow-2xs active:scale-95 cursor-pointer font-sans"
+                      className="h-6 sm:h-7 rounded-lg bg-stone-100 hover:bg-stone-200 active:bg-stone-300 border border-stone-300 text-stone-800 font-mono text-sm font-bold transition-all shadow-2xs active:scale-95 cursor-pointer font-sans flex items-center justify-center"
                     >
                       {num}
                     </button>
@@ -285,25 +285,25 @@ export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
                   <button
                     type="button"
                     onClick={handleClear}
-                    className="h-11 sm:h-12 rounded-xl bg-stone-100 hover:bg-stone-200 active:bg-stone-300 border border-stone-300 text-[11px] font-bold text-stone-600 hover:text-stone-900 transition-all active:scale-95 uppercase tracking-wider cursor-pointer font-sans"
+                    className="h-6 sm:h-7 rounded-lg bg-stone-100 hover:bg-stone-200 active:bg-stone-300 border border-stone-300 text-[9px] font-bold text-stone-600 hover:text-stone-900 transition-all active:scale-95 uppercase tracking-tight cursor-pointer font-sans flex items-center justify-center"
                   >
-                    {language === 'cy' ? 'Clirio' : 'Clear'}
+                    {language === 'cy' ? 'Clir' : 'Clear'}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDigitClick('0')}
-                    className="h-11 sm:h-12 rounded-xl bg-stone-100 hover:bg-stone-200 active:bg-stone-300 border border-stone-300 text-stone-800 font-mono text-lg font-bold transition-all shadow-2xs active:scale-95 cursor-pointer font-sans"
+                    className="h-6 sm:h-7 rounded-lg bg-stone-100 hover:bg-stone-200 active:bg-stone-300 border border-stone-300 text-stone-800 font-mono text-sm font-bold transition-all shadow-2xs active:scale-95 cursor-pointer font-sans flex items-center justify-center"
                   >
                     0
                   </button>
                   <button
                     type="button"
                     onClick={handleBackspace}
-                    className="h-11 sm:h-12 rounded-xl bg-stone-100 hover:bg-stone-200 active:bg-stone-300 border border-stone-300 flex items-center justify-center text-stone-600 hover:text-stone-900 transition-all active:scale-95 cursor-pointer font-sans"
+                    className="h-6 sm:h-7 rounded-lg bg-stone-100 hover:bg-stone-200 active:bg-stone-300 border border-stone-300 flex items-center justify-center text-stone-600 hover:text-stone-900 transition-all active:scale-95 cursor-pointer font-sans"
                     title={language === 'cy' ? 'Dileu' : 'Backspace'}
                     aria-label="Backspace"
                   >
-                    <Delete className="w-5 h-5" />
+                    <Delete className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
