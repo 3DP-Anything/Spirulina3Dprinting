@@ -174,6 +174,21 @@ export default function App() {
     setShowSettings(true);
     setIsSidebarCollapsed(false);
   };
+
+  const handleLockSettings = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    setSettingsUnlockedUntil(null);
+    setRemainingSettingsAuthSeconds(0);
+    try {
+      sessionStorage.removeItem('settings_unlocked_until');
+    } catch {}
+    if (showSettings) {
+      setShowSettings(false);
+    }
+  };
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
   const [showPdfExplorerModal, setShowPdfExplorerModal] = useState(false);
@@ -1441,27 +1456,51 @@ export default function App() {
                 <Settings className="w-4 h-4 shrink-0 text-white" />
               </button>
 
-              {/* Padlock and countdown below the settings icon - lowered to avoid outline overlap */}
+              {/* Padlock and countdown below the settings icon - lowered to top-[46px] to completely clear the circular outline */}
               {RESTRICT_SETTINGS_ACCESS && (
-                <div 
-                  className="absolute top-[41px] left-1/2 -translate-x-1/2 pointer-events-none select-none z-30 whitespace-nowrap flex items-center justify-center gap-1"
-                  title={
-                    remainingSettingsAuthSeconds > 0
-                      ? `${language === 'cy' ? "Amser ar ôl cyn bod angen cod" : "Time remaining before code is required"}: ${formatCountdown(remainingSettingsAuthSeconds)}`
-                      : (language === 'cy' ? "Mynediad cyfyngedig (angen cod)" : "Restricted access (code required)")
-                  }
-                >
-                  {remainingSettingsAuthSeconds > 0 ? (
-                    <>
-                      <Unlock className="w-2.5 h-2.5 text-black shrink-0 stroke-[2.5]" />
-                      <span className="font-mono text-[11.5px] font-black text-black tracking-tight leading-none block">
-                        {formatCountdown(remainingSettingsAuthSeconds)}
-                      </span>
-                    </>
-                  ) : (
+                remainingSettingsAuthSeconds > 0 ? (
+                  <button 
+                    type="button"
+                    onClick={handleLockSettings}
+                    className="absolute top-[46px] left-1/2 -translate-x-1/2 select-none z-30 whitespace-nowrap flex items-center justify-center gap-1 cursor-pointer group/lock-btn hover:text-rose-600 active:scale-95 transition-all py-0.5 px-1 rounded-sm"
+                    title={
+                      language === 'cy'
+                        ? `Amser ar ôl cyn bod angen cod: ${formatCountdown(remainingSettingsAuthSeconds)}. Cliciwch i gloi'r gosodiadau ar unwaith.`
+                        : `Time remaining before code is required: ${formatCountdown(remainingSettingsAuthSeconds)}. Click to lock settings immediately.`
+                    }
+                    aria-label={
+                      language === 'cy'
+                        ? `Cloi gosodiadau (amser ar ôl: ${formatCountdown(remainingSettingsAuthSeconds)})`
+                        : `Lock settings (time remaining: ${formatCountdown(remainingSettingsAuthSeconds)})`
+                    }
+                  >
+                    <Unlock className="w-2.5 h-2.5 text-black group-hover/lock-btn:text-rose-600 shrink-0 stroke-[2.5] transition-colors" />
+                    <span className="font-mono text-[11px] font-black text-black group-hover/lock-btn:text-rose-600 tracking-tight leading-none block transition-colors">
+                      {formatCountdown(remainingSettingsAuthSeconds)}
+                    </span>
+                  </button>
+                ) : (
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openSettings();
+                    }}
+                    className="absolute top-[46px] left-1/2 -translate-x-1/2 select-none z-30 whitespace-nowrap flex items-center justify-center cursor-pointer group/lock-btn hover:scale-110 active:scale-95 transition-transform p-0.5"
+                    title={
+                      language === 'cy'
+                        ? "Mynediad cyfyngedig (angen cod) - Cliciwch i ddatgloi"
+                        : "Restricted access (code required) - Click to unlock"
+                    }
+                    aria-label={
+                      language === 'cy'
+                        ? "Mynediad cyfyngedig (angen cod)"
+                        : "Restricted access (code required)"
+                    }
+                  >
                     <Lock className="w-2.5 h-2.5 text-black shrink-0 stroke-[2.5]" />
-                  )}
-                </div>
+                  </button>
+                )
               )}
             </div>
 
