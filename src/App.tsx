@@ -1207,7 +1207,9 @@ export default function App() {
           }}
           className={`flex-1 h-full flex items-center justify-between gap-4 overflow-x-auto scrollbar-none select-none ${isNavDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         >
-          <div className="flex items-center gap-1 shrink-0">
+          {/* Left Section: Design, Calculate, 3D Print Steps + Import Model */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
             {[
               { 
                 id: 'model', 
@@ -1336,143 +1338,155 @@ export default function App() {
                 </React.Fragment>
               );
             })}
-          </div>
-  
-          <div id="import-container" className="flex items-center justify-center pl-2 shrink-0">
-            <label
-              className={`flex items-center justify-center gap-2 h-9 border text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer px-3.5 shrink-0 ${
-                highlightedSection === 'subsec_import_hover' || highlightedSection === 'subsec-import'
-                  ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)]'
-                  : 'bg-[#7F7F7F] border-[#404040] hover:bg-[#7F7F7F]/90 hover:border-[#404040]/80 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95'
-              }`}
-              title={language === 'cy' ? "Mewnforio ffeil paramedrau model (.cup)" : "Import model parameter file (.cup)"}
-            >
-              <Upload className="w-3.5 h-3.5 text-white" />
-              <span>{language === 'cy' ? 'Mewnforio Model' : 'Import Model'}</span>
-              <input type="file" accept=".txt,.cup,.cfg,.json,*" onChange={importConfig} className="hidden" />
-            </label>
-          </div>
-        </div>
-
-        {/* Right Action Utilities Toolbar (Always Visible, Unclipped) */}
-        <div className="flex items-center justify-end gap-2 shrink-0 pr-1 select-none overflow-visible">
-          {/* PDF Documents & Explorer Button */}
-          <button
-            id="pdf-explorer-button"
-            onClick={() => setShowPdfExplorerModal(true)}
-            className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
-            title={language === 'cy' ? "Dogfennau PDF a Porwr Ffeiliau" : "PDF Documents & File Explorer"}
-            aria-label="PDF Documents & File Explorer"
-          >
-            <PdfIcon className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
-          </button>
-
-          {/* YouTube Channel Link */}
-          <a
-            id="youtube-channel-link"
-            href={YOUTUBE_CHANNEL_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
-            title={language === 'cy' ? "Sianel YouTube" : "YouTube Channel"}
-            aria-label="YouTube Channel"
-          >
-            <Youtube className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
-          </a>
-
-          {/* Welsh / British Toggle button */}
-          <button
-            id="language-toggle-container"
-            onClick={() => setLanguage(language === 'en' ? 'cy' : 'en')}
-            className={`group flex p-1 border rounded-xl transition-all cursor-pointer items-center gap-1.5 h-9 shrink-0 ${
-              highlightedSection === 'subsec_language_hover' || highlightedSection === 'subsec-language'
-                ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
-                : 'bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white'
-            }`}
-            title={language === 'en' ? "Newid i'r Gymraeg" : "Switch to English"}
-          >
-            <div className={`p-0.5 rounded-full ${language === 'cy' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
-              <WelshFlagSVG />
             </div>
-            <div className={`p-0.5 rounded-full ${language === 'en' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
-              <UKFlagSVG />
+    
+            <div id="import-container" className="flex items-center justify-center pl-2 shrink-0">
+              <label
+                className={`flex items-center justify-center gap-2 h-9 border text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer px-3.5 shrink-0 ${
+                  highlightedSection === 'subsec_import_hover' || highlightedSection === 'subsec-import'
+                    ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)]'
+                    : 'bg-[#7F7F7F] border-[#404040] hover:bg-[#7F7F7F]/90 hover:border-[#404040]/80 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95'
+                }`}
+                title={language === 'cy' ? "Mewnforio ffeil paramedrau model (.cup)" : "Import model parameter file (.cup)"}
+              >
+                <Upload className="w-3.5 h-3.5 text-white" />
+                <span>{language === 'cy' ? 'Mewnforio Model' : 'Import Model'}</span>
+                <input type="file" accept=".txt,.cup,.cfg,.json,*" onChange={importConfig} className="hidden" />
+              </label>
             </div>
-          </button>
+          </div>
 
-          <button 
-            id="smiley-toggle-container"
-            onClick={() => setIsSmileyActive(!isSmileyActive)}
-            className={`group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 ${
-              highlightedSection === 'subsec_smiley_hover' || highlightedSection === 'subsec-smiley'
-                ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
-                : isSmileyActive 
-                  ? 'bg-[#7F7F7F] border-[#404040] text-white shadow-[0_0_12px_rgba(255,255,255,0.15)] hover:bg-[#7F7F7F]/90' 
-                  : 'bg-[#7F7F7F] border-[#404040] text-white/70 hover:text-white hover:border-[#404040]/80'
-            }`}
-            title={isSmileyActive ? t('deactivateAssistant') : t('reactivateAssistant')}
-          >
-            <Smile className="w-4 h-4 shrink-0 text-white" />
-          </button>
-
-          {/* Settings button with countdown below */}
-          <div className="relative flex flex-col items-center justify-center shrink-0 overflow-visible">
-            <button 
-              id="settings-button"
-              onClick={() => {
-                if (showSettings) {
-                  setShowSettings(false);
-                } else {
-                  openSettings();
-                }
-              }}
-              className={`group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.1)] cursor-pointer shrink-0 ${
-                highlightedSection === 'settings'
-                  ? 'ring-4 ring-neutral-900/40 bg-[#7F7F7F] border-[#404040] text-white scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)]'
-                  : 'bg-[#7F7F7F] border-[#404040] text-white'
-              }`}
-              title={
-                remainingSettingsAuthSeconds > 0 && RESTRICT_SETTINGS_ACCESS
-                  ? `${t('settingsTitle')} (${language === 'cy' ? 'Datgloi am' : 'Unlocked for'} ${formatCountdown(remainingSettingsAuthSeconds)})`
-                  : t('settingsTitle')
-              }
+          {/* Right Action Utilities Toolbar (Slides along with design, calculate, and save buttons) */}
+          <div className="flex items-center justify-end gap-2 shrink-0 pr-1 select-none overflow-visible">
+            {/* PDF Documents & Explorer Button */}
+            <button
+              id="pdf-explorer-button"
+              onClick={() => setShowPdfExplorerModal(true)}
+              className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
+              title={language === 'cy' ? "Dogfennau PDF a Porwr Ffeiliau" : "PDF Documents & File Explorer"}
+              aria-label="PDF Documents & File Explorer"
             >
-              <Settings className="w-4 h-4 shrink-0 text-white" />
+              <PdfIcon className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
             </button>
 
-            {/* Countdown below the settings icon - 50% larger, black font, no black background */}
-            {remainingSettingsAuthSeconds > 0 && RESTRICT_SETTINGS_ACCESS && (
-              <div 
-                className="absolute top-[38px] left-1/2 -translate-x-1/2 pointer-events-none select-none z-30 whitespace-nowrap text-center"
-                title={`${language === 'cy' ? "Amser ar ôl cyn bod angen cod" : "Time remaining before code is required"}: ${formatCountdown(remainingSettingsAuthSeconds)}`}
-              >
-                <span className="font-mono text-[12px] font-black text-black tracking-tight leading-none block">
-                  {formatCountdown(remainingSettingsAuthSeconds)}
-                </span>
+            {/* YouTube Channel Link */}
+            <a
+              id="youtube-channel-link"
+              href={YOUTUBE_CHANNEL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
+              title={language === 'cy' ? "Sianel YouTube" : "YouTube Channel"}
+              aria-label="YouTube Channel"
+            >
+              <Youtube className="w-4 h-4 shrink-0 text-white group-hover:text-red-400 transition-colors" />
+            </a>
+
+            {/* Welsh / British Toggle button */}
+            <button
+              id="language-toggle-container"
+              onClick={() => setLanguage(language === 'en' ? 'cy' : 'en')}
+              className={`group flex p-1 border rounded-xl transition-all cursor-pointer items-center gap-1.5 h-9 shrink-0 ${
+                highlightedSection === 'subsec_language_hover' || highlightedSection === 'subsec-language'
+                  ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
+                  : 'bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white'
+              }`}
+              title={language === 'en' ? "Newid i'r Gymraeg" : "Switch to English"}
+            >
+              <div className={`p-0.5 rounded-full ${language === 'cy' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
+                <WelshFlagSVG />
               </div>
-            )}
+              <div className={`p-0.5 rounded-full ${language === 'en' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
+                <UKFlagSVG />
+              </div>
+            </button>
+
+            <button 
+              id="smiley-toggle-container"
+              onClick={() => setIsSmileyActive(!isSmileyActive)}
+              className={`group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 ${
+                highlightedSection === 'subsec_smiley_hover' || highlightedSection === 'subsec-smiley'
+                  ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
+                  : isSmileyActive 
+                    ? 'bg-[#7F7F7F] border-[#404040] text-white shadow-[0_0_12px_rgba(255,255,255,0.15)] hover:bg-[#7F7F7F]/90' 
+                    : 'bg-[#7F7F7F] border-[#404040] text-white/70 hover:text-white hover:border-[#404040]/80'
+              }`}
+              title={isSmileyActive ? t('deactivateAssistant') : t('reactivateAssistant')}
+            >
+              <Smile className="w-4 h-4 shrink-0 text-white" />
+            </button>
+
+            {/* Settings button with padlock and countdown below */}
+            <div className="relative flex flex-col items-center justify-center shrink-0 overflow-visible">
+              <button 
+                id="settings-button"
+                onClick={() => {
+                  if (showSettings) {
+                    setShowSettings(false);
+                  } else {
+                    openSettings();
+                  }
+                }}
+                className={`group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.1)] cursor-pointer shrink-0 ${
+                  highlightedSection === 'settings'
+                    ? 'ring-4 ring-neutral-900/40 bg-[#7F7F7F] border-[#404040] text-white scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)]'
+                    : 'bg-[#7F7F7F] border-[#404040] text-white'
+                }`}
+                title={
+                  remainingSettingsAuthSeconds > 0 && RESTRICT_SETTINGS_ACCESS
+                    ? `${t('settingsTitle')} (${language === 'cy' ? 'Datgloi am' : 'Unlocked for'} ${formatCountdown(remainingSettingsAuthSeconds)})`
+                    : t('settingsTitle')
+                }
+              >
+                <Settings className="w-4 h-4 shrink-0 text-white" />
+              </button>
+
+              {/* Padlock and countdown below the settings icon - lowered to avoid outline overlap */}
+              {RESTRICT_SETTINGS_ACCESS && (
+                <div 
+                  className="absolute top-[41px] left-1/2 -translate-x-1/2 pointer-events-none select-none z-30 whitespace-nowrap flex items-center justify-center gap-1"
+                  title={
+                    remainingSettingsAuthSeconds > 0
+                      ? `${language === 'cy' ? "Amser ar ôl cyn bod angen cod" : "Time remaining before code is required"}: ${formatCountdown(remainingSettingsAuthSeconds)}`
+                      : (language === 'cy' ? "Mynediad cyfyngedig (angen cod)" : "Restricted access (code required)")
+                  }
+                >
+                  {remainingSettingsAuthSeconds > 0 ? (
+                    <>
+                      <Unlock className="w-2.5 h-2.5 text-black shrink-0 stroke-[2.5]" />
+                      <span className="font-mono text-[11.5px] font-black text-black tracking-tight leading-none block">
+                        {formatCountdown(remainingSettingsAuthSeconds)}
+                      </span>
+                    </>
+                  ) : (
+                    <Lock className="w-2.5 h-2.5 text-black shrink-0 stroke-[2.5]" />
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Info / About App button */}
+            <button 
+              id="info-button"
+              onClick={() => setShowAboutModal(true)}
+              className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
+              title={t('aboutAppTitle')}
+              aria-label="About this app"
+            >
+              <Info className="w-4 h-4 shrink-0 text-white group-hover:text-emerald-300 transition-colors" />
+            </button>
+
+            {/* Maintenance & Repair button */}
+            <button 
+              id="maintenance-button"
+              onClick={() => setShowMaintenanceModal(true)}
+              className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
+              title={t('maintenanceTitle')}
+              aria-label="Maintenance & Repair"
+            >
+              <ScrewdriverSpannerIcon className="w-4 h-4 shrink-0 text-white group-hover:text-amber-300 transition-colors" />
+            </button>
           </div>
-
-          {/* Info / About App button */}
-          <button 
-            id="info-button"
-            onClick={() => setShowAboutModal(true)}
-            className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
-            title={t('aboutAppTitle')}
-            aria-label="About this app"
-          >
-            <Info className="w-4 h-4 shrink-0 text-white group-hover:text-emerald-300 transition-colors" />
-          </button>
-
-          {/* Maintenance & Repair button */}
-          <button 
-            id="maintenance-button"
-            onClick={() => setShowMaintenanceModal(true)}
-            className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
-            title={t('maintenanceTitle')}
-            aria-label="Maintenance & Repair"
-          >
-            <ScrewdriverSpannerIcon className="w-4 h-4 shrink-0 text-white group-hover:text-amber-300 transition-colors" />
-          </button>
         </div>
       </nav>
 

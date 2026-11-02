@@ -252,7 +252,7 @@ export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
                             : 'border-stone-200 bg-stone-50/70 text-stone-300'
                         }`}
                       >
-                        {digit}
+                        {digit ? '*' : ''}
                       </div>
                     );
                   })}
