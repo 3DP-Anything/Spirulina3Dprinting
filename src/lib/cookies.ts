@@ -122,3 +122,19 @@ export function clearStoredSettings(): void {
     }
   } catch {}
 }
+
+/**
+ * Completely clears all cookies, consent flags, and stored application settings/parameters
+ */
+export function resetAllCookies(): void {
+  deleteCookie(COOKIE_CONSENT_KEY);
+  deleteCookie(APPLIED_SETTINGS_KEY);
+  deleteCookie(APPLIED_PARAMS_KEY);
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(COOKIE_CONSENT_KEY);
+      localStorage.removeItem(APPLIED_SETTINGS_KEY);
+      localStorage.removeItem(APPLIED_PARAMS_KEY);
+    }
+  } catch {}
+}

@@ -1,7 +1,7 @@
 export interface PrinterSettings {
   pistonDiameter?: number; // Piston diameter in mm (default 45mm)
-  nozzleDiameter: number; // Deposition width / nozzle diameter in mm (default 4mm)
-  depositionWidth?: number; // Deposition width in mm (default 4mm)
+  nozzleDiameter: number; // Deposition width / nozzle diameter in mm (default 3mm)
+  depositionWidth?: number; // Deposition width in mm (default 3mm)
   layerHeight: number;
   extrusionWidth: number;
   speed: number; // mm/s

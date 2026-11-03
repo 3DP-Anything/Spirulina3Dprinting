@@ -37,6 +37,7 @@ import {
   saveAppliedSettings, 
   getStoredSettings, 
   clearStoredSettings, 
+  resetAllCookies,
   CookieConsent 
 } from './lib/cookies';
 import { ModelParams, PrinterSettings, TextureType, DEFAULT_MODEL_PARAMS, DEFAULT_PRINTER_SETTINGS } from './lib/types';
@@ -69,11 +70,27 @@ export default function App() {
     return language === 'cy' ? 'Diofyn (Cytbwys)' : 'Default (Balanced)';
   };
 
-  const [params, setParams] = useState<ModelParams>(DEFAULT_MODEL_PARAMS);
+  const [params, setParams] = useState<ModelParams>(() => {
+    try {
+      const stored = getStoredSettings();
+      if (stored?.params) {
+        return { ...DEFAULT_MODEL_PARAMS, ...stored.params };
+      }
+    } catch {}
+    return DEFAULT_MODEL_PARAMS;
+  });
   const exceedsBuildVolume = useMemo(() => {
     return checkExceedsBuildVolume(params);
   }, [params]);
-  const [settings, setSettings] = useState<PrinterSettings>(DEFAULT_PRINTER_SETTINGS);
+  const [settings, setSettings] = useState<PrinterSettings>(() => {
+    try {
+      const stored = getStoredSettings();
+      if (stored?.settings) {
+        return { ...DEFAULT_PRINTER_SETTINGS, ...stored.settings };
+      }
+    } catch {}
+    return DEFAULT_PRINTER_SETTINGS;
+  });
 
   const [sizeRestrictionWarning, setSizeRestrictionWarning] = useState<boolean>(false);
 
@@ -113,13 +130,25 @@ export default function App() {
       lockRibDepth: true,
       lockRibWidth: true,
       limitToBuildVolume: true,
+      depositionWidth: DEFAULT_PRINTER_SETTINGS.depositionWidth,
+      nozzleDiameter: DEFAULT_PRINTER_SETTINGS.nozzleDiameter,
+      extrusionWidth: DEFAULT_PRINTER_SETTINGS.extrusionWidth,
+      eConstant: DEFAULT_PRINTER_SETTINGS.eConstant,
       speed: DEFAULT_PRINTER_SETTINGS.speed,
       layerHeight: DEFAULT_PRINTER_SETTINGS.layerHeight,
       flow: DEFAULT_PRINTER_SETTINGS.flow,
     };
   }, [isAdvancedMode, settings]);
 
-  const [localSettings, setLocalSettings] = useState<PrinterSettings>(DEFAULT_PRINTER_SETTINGS);
+  const [localSettings, setLocalSettings] = useState<PrinterSettings>(() => {
+    try {
+      const stored = getStoredSettings();
+      if (stored?.settings) {
+        return { ...DEFAULT_PRINTER_SETTINGS, ...stored.settings };
+      }
+    } catch {}
+    return DEFAULT_PRINTER_SETTINGS;
+  });
   const [showSettings, setShowSettings] = useState(false);
   const [isSettingsAuthModalOpen, setIsSettingsAuthModalOpen] = useState(false);
   const [settingsUnlockedUntil, setSettingsUnlockedUntil] = useState<number | null>(() => {
@@ -188,13 +217,8 @@ export default function App() {
   };
 
   const handleRequestAdvancedMode = () => {
-    const isUnlocked = settingsUnlockedUntil !== null && settingsUnlockedUntil > Date.now();
-    if (isUnlocked) {
-      setIsAdvancedMode(true);
-    } else {
-      setAuthModalMode('advanced');
-      setIsSettingsAuthModalOpen(true);
-    }
+    setAuthModalMode('advanced');
+    setIsSettingsAuthModalOpen(true);
   };
 
   const handleSwitchToBasicMode = () => {
@@ -202,20 +226,27 @@ export default function App() {
     if (showSettings) {
       setShowSettings(false);
     }
+    setSettingsUnlockedUntil(null);
+    setRemainingSettingsAuthSeconds(0);
+    try {
+      sessionStorage.removeItem('settings_unlocked_until');
+    } catch {}
   };
 
   const handleSettingsAuthSuccess = () => {
-    const expiry = Date.now() + SETTINGS_ACCESS_GRACE_PERIOD_MINUTES * 60 * 1000;
-    setSettingsUnlockedUntil(expiry);
-    setRemainingSettingsAuthSeconds(SETTINGS_ACCESS_GRACE_PERIOD_MINUTES * 60);
-    try {
-      sessionStorage.setItem('settings_unlocked_until', String(expiry));
-    } catch {}
     setIsSettingsAuthModalOpen(false);
 
     if (authModalMode === 'advanced') {
       setIsAdvancedMode(true);
+      // NOTE: Switching to advanced mode does NOT unlock settings or start countdown for settings.
+      // Settings remains locked and requires re-entering the code.
     } else {
+      const expiry = Date.now() + SETTINGS_ACCESS_GRACE_PERIOD_MINUTES * 60 * 1000;
+      setSettingsUnlockedUntil(expiry);
+      setRemainingSettingsAuthSeconds(SETTINGS_ACCESS_GRACE_PERIOD_MINUTES * 60);
+      try {
+        sessionStorage.setItem('settings_unlocked_until', String(expiry));
+      } catch {}
       setShowSettings(true);
       setIsSidebarCollapsed(false);
     }
@@ -253,6 +284,22 @@ export default function App() {
     setCookieConsentState('rejected');
     clearStoredSettings();
     setShowCookieModal(false);
+  };
+
+  const handleResetCookies = () => {
+    resetAllCookies();
+    setCookieConsentState(null);
+    setSettings(DEFAULT_PRINTER_SETTINGS);
+    setLocalSettings(DEFAULT_PRINTER_SETTINGS);
+    setParams(DEFAULT_MODEL_PARAMS);
+    setExportFileName(DEFAULT_PRINTER_SETTINGS.modelName || 'model');
+    setActiveTab('model');
+    setIsSmileyActive(true);
+    setGcode('');
+    setLastGeneratedParams(null);
+    setLastGeneratedSettings(null);
+    setPlayhead(1);
+    setIsPlaying(false);
   };
   const [startGcodeCollapsed, setStartGcodeCollapsed] = useState(true);
   const [endGcodeCollapsed, setEndGcodeCollapsed] = useState(true);
@@ -4282,6 +4329,7 @@ export default function App() {
         currentConsent={cookieConsent}
         onAccept={handleAcceptCookies}
         onReject={handleRejectCookies}
+        onResetCookies={handleResetCookies}
         onClose={cookieConsent !== null ? () => setShowCookieModal(false) : undefined}
         language={language}
       />

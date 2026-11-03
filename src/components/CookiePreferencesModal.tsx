@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cookie, Check, X, Sparkles } from 'lucide-react';
+import { Cookie, Check, X, Sparkles, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { CookieConsent } from '../lib/cookies';
 
 interface CookiePreferencesModalProps {
   isOpen: boolean;
   onAccept: () => void;
   onReject: () => void;
+  onResetCookies?: () => void;
   onClose?: () => void;
   currentConsent?: CookieConsent;
   language: 'en' | 'cy';
@@ -16,10 +17,12 @@ export const CookiePreferencesModal: React.FC<CookiePreferencesModalProps> = ({
   isOpen,
   onAccept,
   onReject,
+  onResetCookies,
   onClose,
   currentConsent,
   language,
 }) => {
+  const [isResetConfirmed, setIsResetConfirmed] = useState(false);
   return (
     <AnimatePresence>
       {isOpen && (
@@ -172,6 +175,58 @@ export const CookiePreferencesModal: React.FC<CookiePreferencesModalProps> = ({
                     </p>
                   </div>
                 </button>
+
+                {/* Option 3: Reset Cookies (Clear Cookies & Revert App Values to Defaults) */}
+                {onResetCookies && (
+                  <div className="pt-2 border-t border-stone-200/90 font-sans">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-amber-500/10 border-2 border-amber-500/30 rounded-2xl p-3.5 font-sans">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                          <RotateCcw className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-amber-950 text-[13.5px] leading-tight font-sans">
+                            {language === 'cy' ? 'Ailosod Cwcis' : 'Reset Cookies'}
+                          </div>
+                          <p className="text-[12px] leading-snug text-amber-900/80 mt-0.5 font-normal font-sans">
+                            {language === 'cy'
+                              ? "Clirio cwcis ac ailosod holl werthoedd yr ap i'r rhagosodiadau."
+                              : 'Clear cookies and reset all application values to default values.'}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onResetCookies();
+                          setIsResetConfirmed(true);
+                          setTimeout(() => setIsResetConfirmed(false), 5000);
+                        }}
+                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-[12px] font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shrink-0 font-sans"
+                        title={language === 'cy' ? 'Ailosod cwcis a holl werthoedd yr ap' : 'Reset cookies and all app values'}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>{language === 'cy' ? 'Ailosod Cwcis' : 'Reset Cookies'}</span>
+                      </button>
+                    </div>
+
+                    {isResetConfirmed && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="mt-2.5 p-2.5 bg-emerald-50 border border-emerald-300 rounded-xl flex items-center gap-2 text-emerald-900 text-[12.5px] font-medium font-sans"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>
+                          {language === 'cy'
+                            ? "Wedi ailosod! Mae'r cwcis wedi'u clirio a'r holl werthoedd wedi'u hadfer i'r rhagosodiadau."
+                            : 'Cookies have been reset and all app values have been restored to their default values.'}
+                        </span>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Footer Note */}
