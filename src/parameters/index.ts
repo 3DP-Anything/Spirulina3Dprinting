@@ -877,7 +877,7 @@ export const PRINTER_SETTINGS_REGISTRY: Record<string, ParameterDefinition> = {
     key: 'depositionWidth',
     name: 'Deposition Width',
     category: 'printer_extrusion',
-    defaultValue: 4.0,
+    defaultValue: 3.0,
     unit: 'mm',
     description: 'Deposition width in mm. Controls the spacing/pitch between adjacent toolpaths in the G-code.',
     status: 'unlocked',

@@ -96,6 +96,29 @@ export default function App() {
       return nextParams;
     });
   };
+  const [isAdvancedMode, setIsAdvancedMode] = useState<boolean>(false);
+  const [authModalMode, setAuthModalMode] = useState<'settings' | 'advanced'>('settings');
+
+  const activeSettings = useMemo<PrinterSettings>(() => {
+    if (isAdvancedMode) {
+      return settings;
+    }
+    return {
+      ...settings,
+      allowCustomSize: false,
+      enableTexture: false,
+      enableGcodeTexture: false,
+      enableStl3mfExport: false,
+      cubeMode: false,
+      lockRibDepth: true,
+      lockRibWidth: true,
+      limitToBuildVolume: true,
+      speed: DEFAULT_PRINTER_SETTINGS.speed,
+      layerHeight: DEFAULT_PRINTER_SETTINGS.layerHeight,
+      flow: DEFAULT_PRINTER_SETTINGS.flow,
+    };
+  }, [isAdvancedMode, settings]);
+
   const [localSettings, setLocalSettings] = useState<PrinterSettings>(DEFAULT_PRINTER_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [isSettingsAuthModalOpen, setIsSettingsAuthModalOpen] = useState(false);
@@ -156,10 +179,28 @@ export default function App() {
     const isRestricted = RESTRICT_SETTINGS_ACCESS;
     const isUnlocked = settingsUnlockedUntil !== null && settingsUnlockedUntil > Date.now();
     if (isRestricted && !isUnlocked) {
+      setAuthModalMode('settings');
       setIsSettingsAuthModalOpen(true);
     } else {
       setShowSettings(true);
       setIsSidebarCollapsed(false);
+    }
+  };
+
+  const handleRequestAdvancedMode = () => {
+    const isUnlocked = settingsUnlockedUntil !== null && settingsUnlockedUntil > Date.now();
+    if (isUnlocked) {
+      setIsAdvancedMode(true);
+    } else {
+      setAuthModalMode('advanced');
+      setIsSettingsAuthModalOpen(true);
+    }
+  };
+
+  const handleSwitchToBasicMode = () => {
+    setIsAdvancedMode(false);
+    if (showSettings) {
+      setShowSettings(false);
     }
   };
 
@@ -171,8 +212,13 @@ export default function App() {
       sessionStorage.setItem('settings_unlocked_until', String(expiry));
     } catch {}
     setIsSettingsAuthModalOpen(false);
-    setShowSettings(true);
-    setIsSidebarCollapsed(false);
+
+    if (authModalMode === 'advanced') {
+      setIsAdvancedMode(true);
+    } else {
+      setShowSettings(true);
+      setIsSidebarCollapsed(false);
+    }
   };
 
   const handleLockSettings = (e?: React.MouseEvent) => {
@@ -397,9 +443,9 @@ export default function App() {
   // Check if G-code needs recalculation (only geometry/params and printer settings affect toolpaths)
   const isGcodeStale = useMemo(() => {
     const paramsChanged = JSON.stringify(params) !== JSON.stringify(lastGeneratedParams);
-    const settingsChanged = JSON.stringify(settings) !== JSON.stringify(lastGeneratedSettings);
+    const settingsChanged = JSON.stringify(activeSettings) !== JSON.stringify(lastGeneratedSettings);
     return paramsChanged || settingsChanged;
-  }, [params, lastGeneratedParams, settings, lastGeneratedSettings]);
+  }, [params, lastGeneratedParams, activeSettings, lastGeneratedSettings]);
 
   // Handle G-Code generation
   useEffect(() => {
@@ -413,14 +459,14 @@ export default function App() {
       setCalcProgress(0);
       
       try {
-        const generated = await generateGCode(deferredParams, settings, (p) => {
+        const generated = await generateGCode(deferredParams, activeSettings, (p) => {
           if (isMounted) setCalcProgress(p);
         }, exportFileName);
         
         if (isMounted) {
           setGcode(generated);
           setLastGeneratedParams(deferredParams);
-          setLastGeneratedSettings(settings);
+          setLastGeneratedSettings(activeSettings);
           setLastGeneratedFileName(exportFileName);
           setIsCalculating(false);
           // Auto-expand sidebar if it's collapsed when G-code is ready
@@ -439,7 +485,7 @@ export default function App() {
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [deferredParams, settings, activeTab, isGcodeStale, gcode, exportFileName]);
+  }, [deferredParams, activeSettings, activeTab, isGcodeStale, gcode, exportFileName]);
 
   // Playback Loop
   useEffect(() => {
@@ -649,7 +695,7 @@ export default function App() {
     setIs3mfPreviewOn(false);
     setShowA4SheetIn3D(false);
     setIsTechDrawingActive(false);
-  }, [activeTab, showSettings]);
+  }, [activeTab, showSettings, isAdvancedMode]);
 
   // Live WYSIWYG technical drawing generator
   useEffect(() => {
@@ -1220,218 +1266,234 @@ export default function App() {
               navScrollRef.current.scrollLeft += e.deltaY;
             }
           }}
-          className={`flex-1 h-full flex items-center justify-between gap-4 overflow-x-auto scrollbar-none select-none ${isNavDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          className={`flex-1 h-full flex items-center justify-start gap-2.5 overflow-x-auto scrollbar-none select-none pr-2 ${isNavDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         >
-          {/* Left Section: Design, Calculate, 3D Print Steps + Import Model */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="flex items-center gap-1 shrink-0">
-            {[
-              { 
-                id: 'model', 
-                label: t('stepDesign'), 
-                active: activeTab === 'model', 
-                stepNum: 1,
-                tourId: 'step-1',
-                color: '#15803D', // Forest eco-green
-                inactiveColor: '#78716C', // Slate/stone gray
-                glowClass: 'border-emerald-700/30 bg-emerald-50 text-emerald-800'
-              },
-              { 
-                id: 'gcode', 
-                label: t('stepCalculate'), 
-                active: activeTab === 'gcode', 
-                stepNum: 2,
-                tourId: 'step-2',
-                color: '#854D0E', // Warm earth amber/brown
-                inactiveColor: '#78716C',
-                glowClass: 'border-amber-700/30 bg-[#FEF3C7] text-amber-900'
-              },
-              { 
-                id: 'save', 
-                label: t('step3DPrint'), 
-                active: activeTab === 'save', 
-                stepNum: 3,
-                tourId: 'step-3',
-                color: '#EA580C', // Custom orange
-                inactiveColor: '#78716C',
-                glowClass: 'border-orange-600/30 bg-orange-50 text-orange-950 font-bold'
-              }
-            ].map((step, idx, arr) => {
-              const isHovered = hoveredStepId === step.id;
-              const isStepHighlighted = (step.id === 'model' && highlightedSection === 'design') ||
-                                        (step.id === 'gcode' && highlightedSection === 'gcode') ||
-                                        (step.id === 'save' && highlightedSection === 'save');
-              const isExpanded = step.active || isHovered || isStepHighlighted;
-              return (
-                <React.Fragment key={step.id}>
-                  <motion.div 
-                    id={step.tourId}
-                    role="button"
-                    tabIndex={0}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onMouseEnter={() => setHoveredStepId(step.id)}
-                    onMouseLeave={() => setHoveredStepId(null)}
-                    onClick={() => {
-                      setShowSettings(false);
-                      setIsSidebarCollapsed(false);
-                      setActiveTab(step.id as 'model' | 'gcode' | 'save');
-                    }}
-                    className={`flex items-center gap-2 h-9 transition-all duration-300 rounded-xl cursor-pointer outline-hidden group ${
-                      isStepHighlighted
-                        ? `ring-4 ring-${step.id === 'model' ? 'emerald' : step.id === 'gcode' ? 'amber' : 'orange'}-600/50 bg-${step.id === 'model' ? 'emerald' : step.id === 'gcode' ? 'amber' : 'orange'}-100 border-${step.id === 'model' ? 'emerald' : step.id === 'gcode' ? 'amber' : 'orange'}-600 scale-105`
-                        : step.active 
-                          ? step.glowClass + ' border shadow-xs text-stone-900 font-bold' 
-                          : 'hover:bg-stone-200/50 border border-transparent text-stone-500'
-                    } ${
-                      isExpanded ? 'px-2.5 w-auto' : 'px-1.5 w-9 md:w-auto md:px-2.5'
-                    }`}
+          {/* 1. Design, 2. Calculate, 3. Save Steps */}
+          <div className="flex items-center gap-1 shrink-0">
+          {[
+            { 
+              id: 'model', 
+              label: t('stepDesign'), 
+              active: activeTab === 'model', 
+              stepNum: 1,
+              tourId: 'step-1',
+              color: '#15803D', // Forest eco-green
+              inactiveColor: '#78716C', // Slate/stone gray
+              glowClass: 'border-emerald-700/30 bg-emerald-50 text-emerald-800'
+            },
+            { 
+              id: 'gcode', 
+              label: t('stepCalculate'), 
+              active: activeTab === 'gcode', 
+              stepNum: 2,
+              tourId: 'step-2',
+              color: '#854D0E', // Warm earth amber/brown
+              inactiveColor: '#78716C',
+              glowClass: 'border-amber-700/30 bg-[#FEF3C7] text-amber-900'
+            },
+            { 
+              id: 'save', 
+              label: t('step3DPrint'), 
+              active: activeTab === 'save', 
+              stepNum: 3,
+              tourId: 'step-3',
+              color: '#EA580C', // Custom orange
+              inactiveColor: '#78716C',
+              glowClass: 'border-orange-600/30 bg-orange-50 text-orange-950 font-bold'
+            }
+          ].map((step, idx, arr) => {
+            const isHovered = hoveredStepId === step.id;
+            const isStepHighlighted = (step.id === 'model' && highlightedSection === 'design') ||
+                                      (step.id === 'gcode' && highlightedSection === 'gcode') ||
+                                      (step.id === 'save' && highlightedSection === 'save');
+            const isExpanded = step.active || isHovered || isStepHighlighted;
+            return (
+              <React.Fragment key={step.id}>
+                <motion.div 
+                  id={step.tourId}
+                  role="button"
+                  tabIndex={0}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onMouseEnter={() => setHoveredStepId(step.id)}
+                  onMouseLeave={() => setHoveredStepId(null)}
+                  onClick={() => {
+                    setShowSettings(false);
+                    setIsSidebarCollapsed(false);
+                    setActiveTab(step.id as 'model' | 'gcode' | 'save');
+                  }}
+                  className={`flex items-center gap-2 h-9 transition-all duration-300 rounded-xl cursor-pointer outline-hidden group ${
+                    isStepHighlighted
+                      ? `ring-4 ring-${step.id === 'model' ? 'emerald' : step.id === 'gcode' ? 'amber' : 'orange'}-600/50 bg-${step.id === 'model' ? 'emerald' : step.id === 'gcode' ? 'amber' : 'orange'}-100 border-${step.id === 'model' ? 'emerald' : step.id === 'gcode' ? 'amber' : 'orange'}-600 scale-105`
+                      : step.active 
+                        ? step.glowClass + ' border shadow-xs text-stone-900 font-bold' 
+                        : 'hover:bg-stone-200/50 border border-transparent text-stone-500'
+                  } ${
+                    isExpanded ? 'px-2.5 w-auto' : 'px-1.5 w-9 md:w-auto md:px-2.5'
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[13px] font-black leading-none transition-all duration-300 ${
+                    isStepHighlighted
+                      ? 'text-white'
+                      : step.active 
+                        ? 'text-white' 
+                        : 'bg-stone-200 text-stone-600 border border-stone-300 group-hover:text-stone-800'
+                  }`}
+                  style={{ 
+                    backgroundColor: isStepHighlighted ? step.color : (step.active ? step.color : undefined), 
+                    borderColor: isStepHighlighted ? step.color : undefined 
+                  }}
                   >
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[13px] font-black leading-none transition-all duration-300 ${
-                      isStepHighlighted
-                        ? 'text-white'
-                        : step.active 
-                          ? 'text-white' 
-                          : 'bg-stone-200 text-stone-600 border border-stone-300 group-hover:text-stone-800'
-                    }`}
-                    style={{ 
-                      backgroundColor: isStepHighlighted ? step.color : (step.active ? step.color : undefined), 
-                      borderColor: isStepHighlighted ? step.color : undefined 
-                    }}
+                    {step.id === 'gcode' && isCalculating ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-white" strokeWidth={2} />
+                    ) : step.stepNum}
+                  </div>
+                  <div className={`flex flex-col items-start transition-all duration-300 ${
+                    isExpanded ? 'flex opacity-100 max-w-[130px]' : 'hidden md:flex md:opacity-100 md:max-w-[130px] overflow-hidden'
+                  }`}>
+                    <span 
+                      className="text-[11px] font-black uppercase tracking-wider transition-all duration-300 leading-none whitespace-nowrap"
+                      style={{ color: step.active ? '#1c1917' : step.inactiveColor }}
                     >
-                      {step.id === 'gcode' && isCalculating ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-white" strokeWidth={2} />
-                      ) : step.stepNum}
-                    </div>
-                    <div className={`flex flex-col items-start transition-all duration-300 ${
-                      isExpanded ? 'flex opacity-100 max-w-[130px]' : 'hidden md:flex md:opacity-100 md:max-w-[130px] overflow-hidden'
-                    }`}>
-                      <span 
-                        className="text-[11px] font-black uppercase tracking-wider transition-all duration-300 leading-none whitespace-nowrap"
-                        style={{ color: step.active ? '#1c1917' : step.inactiveColor }}
-                      >
-                        {step.label}
-                      </span>
-                      {step.id === 'gcode' && isCalculating && (
-                        <div className="flex items-center gap-1 mt-1 w-[60px]">
-                          <div className="w-full h-1 bg-stone-200 rounded-full overflow-hidden">
-                            <motion.div 
-                              className="h-full bg-gradient-to-r from-emerald-600 to-amber-600"
-                              initial={{ width: 0 }}
-                              animate={{ width: `${calcProgress}%` }}
-                            />
-                          </div>
+                      {step.label}
+                    </span>
+                    {step.id === 'gcode' && isCalculating && (
+                      <div className="flex items-center gap-1 mt-1 w-[60px]">
+                        <div className="w-full h-1 bg-stone-200 rounded-full overflow-hidden">
+                          <motion.div 
+                            className="h-full bg-gradient-to-r from-emerald-600 to-amber-600"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${calcProgress}%` }}
+                          />
                         </div>
-                      )}
-                    </div>
-                  </motion.div>
-                  {idx < arr.length - 1 && (
-                    <div className="flex items-center gap-0 mx-1">
-                      {[0, 1, 2].map((i) => {
-                        const chevronColor = idx === 0 
-                          ? (i === 0 ? '#15803D' : (i === 1 ? '#0EA5E9' : '#8B5CF6'))
-                          : (i === 0 ? '#854D0E' : (i === 1 ? '#D97706' : '#059669'));
-                        return (
-                          <motion.div
-                            key={i}
-                            animate={{ opacity: [0.3, 0.8, 0.3] }}
-                            transition={{ 
-                              repeat: Infinity, 
-                              duration: 1.2, 
-                              delay: i * 0.15,
-                              ease: "easeInOut" 
-                            }}
-                            className="-ml-1 first:ml-0"
-                            style={{ color: chevronColor }}
-                          >
-                            <ChevronRight className="w-4 h-4 shrink-0" strokeWidth={2} />
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-            </div>
-    
-            <div id="import-container" className="flex items-center justify-center pl-2 shrink-0">
-              <label
-                className={`flex items-center justify-center gap-2 h-9 border text-white font-black text-[10px] uppercase tracking-wider rounded-xl transition-all duration-300 cursor-pointer px-3.5 shrink-0 ${
-                  highlightedSection === 'subsec_import_hover' || highlightedSection === 'subsec-import'
-                    ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)]'
-                    : 'bg-[#7F7F7F] border-[#404040] hover:bg-[#7F7F7F]/90 hover:border-[#404040]/80 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95'
-                }`}
-                title={language === 'cy' ? "Mewnforio ffeil paramedrau model (.cup)" : "Import model parameter file (.cup)"}
-              >
-                <Upload className="w-5 h-5 text-white shrink-0" strokeWidth={1.5} />
-                <span>{language === 'cy' ? 'Mewnforio Model' : 'Import Model'}</span>
-                <input type="file" accept=".txt,.cup,.cfg,.json,*" onChange={importConfig} className="hidden" />
-              </label>
-            </div>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+                {idx < arr.length - 1 && (
+                  <div className="flex items-center gap-0 mx-1">
+                    {[0, 1, 2].map((i) => {
+                      const chevronColor = idx === 0 
+                        ? (i === 0 ? '#15803D' : (i === 1 ? '#0EA5E9' : '#8B5CF6'))
+                        : (i === 0 ? '#854D0E' : (i === 1 ? '#D97706' : '#059669'));
+                      return (
+                        <motion.div
+                          key={i}
+                          animate={{ opacity: [0.3, 0.8, 0.3] }}
+                          transition={{ 
+                            repeat: Infinity, 
+                            duration: 1.2, 
+                            delay: i * 0.15,
+                            ease: "easeInOut" 
+                          }}
+                          className="-ml-1 first:ml-0"
+                          style={{ color: chevronColor }}
+                        >
+                          <ChevronRight className="w-4 h-4 shrink-0" strokeWidth={2} />
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
           </div>
 
-          {/* Right Action Utilities Toolbar (Slides along with design, calculate, and save buttons) */}
-          <div className="flex items-center justify-end gap-2 shrink-0 pr-1 select-none overflow-visible">
-            {/* PDF Documents & Explorer Button */}
-            <button
-              id="pdf-explorer-button"
-              onClick={() => setShowPdfExplorerModal(true)}
-              className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
-              title={language === 'cy' ? "Dogfennau PDF a Porwr Ffeiliau" : "PDF Documents & File Explorer"}
-              aria-label="PDF Documents & File Explorer"
-            >
-              <PdfIcon className="w-6 h-6 shrink-0 text-white group-hover:text-red-400 transition-colors" strokeWidth={1.5} />
-            </button>
+          {/* 4. Smiley Assistant Toggle */}
+          <button 
+            id="smiley-toggle-container"
+            onClick={() => setIsSmileyActive(!isSmileyActive)}
+            className={`group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 ${
+              highlightedSection === 'subsec_smiley_hover' || highlightedSection === 'subsec-smiley'
+                ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
+                : isSmileyActive 
+                  ? 'bg-[#7F7F7F] border-[#404040] text-white shadow-[0_0_12px_rgba(255,255,255,0.15)] hover:bg-[#7F7F7F]/90' 
+                  : 'bg-[#7F7F7F] border-[#404040] text-white/70 hover:text-white hover:border-[#404040]/80'
+            }`}
+            title={isSmileyActive ? t('deactivateAssistant') : t('reactivateAssistant')}
+          >
+            <Smile className="w-6 h-6 shrink-0 text-white" strokeWidth={1.5} />
+          </button>
 
-            {/* YouTube Channel Link */}
-            <a
-              id="youtube-channel-link"
-              href={YOUTUBE_CHANNEL_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
-              title={language === 'cy' ? "Sianel YouTube" : "YouTube Channel"}
-              aria-label="YouTube Channel"
-            >
-              <Youtube className="w-6 h-6 shrink-0 text-white group-hover:text-red-400 transition-colors" strokeWidth={1.5} />
-            </a>
+          {/* 5. Welsh / British Toggle button */}
+          <button
+            id="language-toggle-container"
+            onClick={() => setLanguage(language === 'en' ? 'cy' : 'en')}
+            className={`group flex p-1 border rounded-xl transition-all cursor-pointer items-center gap-1.5 h-9 shrink-0 ${
+              highlightedSection === 'subsec_language_hover' || highlightedSection === 'subsec-language'
+                ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
+                : 'bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white'
+            }`}
+            title={language === 'en' ? "Newid i'r Gymraeg" : "Switch to English"}
+          >
+            <div className={`p-0.5 rounded-full ${language === 'cy' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
+              <WelshFlagSVG className="w-6 h-6" />
+            </div>
+            <div className={`p-0.5 rounded-full ${language === 'en' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
+              <UKFlagSVG className="w-6 h-6" />
+            </div>
+          </button>
 
-            {/* Welsh / British Toggle button */}
-            <button
-              id="language-toggle-container"
-              onClick={() => setLanguage(language === 'en' ? 'cy' : 'en')}
-              className={`group flex p-1 border rounded-xl transition-all cursor-pointer items-center gap-1.5 h-9 shrink-0 ${
-                highlightedSection === 'subsec_language_hover' || highlightedSection === 'subsec-language'
-                  ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
-                  : 'bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white'
+          {/* 6. Import Model */}
+          <div id="import-container" className="flex items-center justify-center shrink-0">
+            <label
+              className={`flex items-center justify-center gap-2 h-9 border text-white font-black text-[10px] uppercase tracking-wider rounded-xl transition-all duration-300 cursor-pointer px-3.5 shrink-0 ${
+                highlightedSection === 'subsec_import_hover' || highlightedSection === 'subsec-import'
+                  ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)]'
+                  : 'bg-[#7F7F7F] border-[#404040] hover:bg-[#7F7F7F]/90 hover:border-[#404040]/80 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95'
               }`}
-              title={language === 'en' ? "Newid i'r Gymraeg" : "Switch to English"}
+              title={language === 'cy' ? "Mewnforio ffeil paramedrau model (.cup)" : "Import model parameter file (.cup)"}
             >
-              <div className={`p-0.5 rounded-full ${language === 'cy' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
-                <WelshFlagSVG className="w-6 h-6" />
-              </div>
-              <div className={`p-0.5 rounded-full ${language === 'en' ? 'bg-white/20 ring-1 ring-white/30' : 'opacity-45'} shrink-0`}>
-                <UKFlagSVG className="w-6 h-6" />
-              </div>
-            </button>
+              <Upload className="w-5 h-5 text-white shrink-0" strokeWidth={1.5} />
+              <span>{language === 'cy' ? 'Mewnforio Model' : 'Import Model'}</span>
+              <input type="file" accept=".txt,.cup,.cfg,.json,*" onChange={importConfig} className="hidden" />
+            </label>
+          </div>
 
-            <button 
-              id="smiley-toggle-container"
-              onClick={() => setIsSmileyActive(!isSmileyActive)}
-              className={`group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 ${
-                highlightedSection === 'subsec_smiley_hover' || highlightedSection === 'subsec-smiley'
-                  ? 'ring-4 ring-neutral-900/40 bg-zinc-600 border-[#1a1a1a] scale-105 shadow-[0_0_25px_rgba(0,0,0,0.3)] text-white'
-                  : isSmileyActive 
-                    ? 'bg-[#7F7F7F] border-[#404040] text-white shadow-[0_0_12px_rgba(255,255,255,0.15)] hover:bg-[#7F7F7F]/90' 
-                    : 'bg-[#7F7F7F] border-[#404040] text-white/70 hover:text-white hover:border-[#404040]/80'
+          {/* 7. Basic / Advanced Mode Toggle */}
+          <div
+            id="mode-toggle-container"
+            className="flex items-center bg-[#505050] border border-[#383838] rounded-xl p-0.5 h-9 shrink-0 select-none shadow-xs"
+          >
+            <button
+              type="button"
+              onClick={handleSwitchToBasicMode}
+              className={`h-full px-2.5 rounded-lg text-[9.5px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                !isAdvancedMode
+                  ? 'bg-white text-stone-900 shadow-sm'
+                  : 'text-stone-300 hover:text-white hover:bg-white/10'
               }`}
-              title={isSmileyActive ? t('deactivateAssistant') : t('reactivateAssistant')}
+              title={language === 'cy' ? 'Modd Sylfaenol (Diofyn)' : 'Basic Mode (Default)'}
             >
-              <Smile className="w-6 h-6 shrink-0 text-white" strokeWidth={1.5} />
+              <span>{language === 'cy' ? 'Sylfaenol' : 'Basic'}</span>
             </button>
 
-            {/* Settings button with padlock and countdown below */}
+            <button
+              type="button"
+              onClick={handleRequestAdvancedMode}
+              className={`h-full px-2.5 rounded-lg text-[9.5px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                isAdvancedMode
+                  ? 'bg-amber-500 text-stone-950 font-black shadow-sm'
+                  : 'text-stone-300 hover:text-white hover:bg-white/10'
+              }`}
+              title={
+                isAdvancedMode
+                  ? (language === 'cy' ? 'Modd Uwch (Gweithredol)' : 'Advanced Mode (Active)')
+                  : (language === 'cy' ? 'Datgloi Modd Uwch (Angen Cod)' : 'Unlock Advanced Mode (Code Required)')
+              }
+            >
+              {!isAdvancedMode ? (
+                <Lock className="w-3 h-3 text-stone-400 stroke-[2.2]" />
+              ) : (
+                <Sparkles className="w-3 h-3 text-stone-950 stroke-[2.2]" />
+              )}
+              <span>{language === 'cy' ? 'Uwch' : 'Advanced'}</span>
+            </button>
+          </div>
+
+          {/* 8. Settings Button (Hidden in Basic Mode) */}
+          {isAdvancedMode && (
             <div className="relative flex flex-col items-center justify-center shrink-0 overflow-visible">
               <button 
                 id="settings-button"
@@ -1503,19 +1565,49 @@ export default function App() {
                 )
               )}
             </div>
+          )}
 
-            {/* Info / About App button */}
-            <button 
-              id="info-button"
-              onClick={() => setShowAboutModal(true)}
-              className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
-              title={t('aboutAppTitle')}
-              aria-label="About this app"
+          {/* 9. PDF Documents & Explorer Button (Hidden in Basic Mode) */}
+          {isAdvancedMode && (
+            <button
+              id="pdf-explorer-button"
+              onClick={() => setShowPdfExplorerModal(true)}
+              className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
+              title={language === 'cy' ? "Dogfennau PDF a Porwr Ffeiliau" : "PDF Documents & File Explorer"}
+              aria-label="PDF Documents & File Explorer"
             >
-              <Info className="w-6 h-6 shrink-0 text-white group-hover:text-emerald-300 transition-colors" strokeWidth={1.5} />
+              <PdfIcon className="w-6 h-6 shrink-0 text-white group-hover:text-red-400 transition-colors" strokeWidth={1.5} />
             </button>
+          )}
 
-            {/* Maintenance & Repair button */}
+          {/* 10. YouTube Channel Link (Hidden in Basic Mode) */}
+          {isAdvancedMode && (
+            <a
+              id="youtube-channel-link"
+              href={YOUTUBE_CHANNEL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center justify-center w-9 h-9 border rounded-xl transition-all cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] hover:border-[#404040]/80 hover:bg-[#7F7F7F]/90 text-white hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] active:scale-95"
+              title={language === 'cy' ? "Sianel YouTube" : "YouTube Channel"}
+              aria-label="YouTube Channel"
+            >
+              <Youtube className="w-6 h-6 shrink-0 text-white group-hover:text-red-400 transition-colors" strokeWidth={1.5} />
+            </a>
+          )}
+
+          {/* 11. Info / About App button (Visible in both Basic and Advanced Modes) */}
+          <button 
+            id="info-button"
+            onClick={() => setShowAboutModal(true)}
+            className="group flex items-center justify-center w-9 h-9 border rounded-xl hover:text-white hover:border-[#404040]/80 transition-all hover:bg-[#7F7F7F]/90 hover:shadow-[0_0_12px_rgba(255,255,255,0.15)] cursor-pointer shrink-0 bg-[#7F7F7F] border-[#404040] text-white active:scale-95"
+            title={t('aboutAppTitle')}
+            aria-label="About this app"
+          >
+            <Info className="w-6 h-6 shrink-0 text-white group-hover:text-emerald-300 transition-colors" strokeWidth={1.5} />
+          </button>
+
+          {/* 12. Maintenance & Repair button (Hidden in Basic Mode) */}
+          {isAdvancedMode && (
             <button 
               id="maintenance-button"
               onClick={() => setShowMaintenanceModal(true)}
@@ -1525,7 +1617,7 @@ export default function App() {
             >
               <ScrewdriverSpannerIcon className="w-6 h-6 shrink-0 text-white group-hover:text-amber-300 transition-colors" strokeWidth={1.4} />
             </button>
-          </div>
+          )}
         </div>
       </nav>
 
@@ -2799,19 +2891,19 @@ export default function App() {
                       <ParameterControls 
                         params={params} 
                         onChange={handleParamsChange} 
-                        showSizeControls={settings.allowCustomSize}
-                        showTexture={settings.enableTexture ?? false}
-                        maxWidth={settings.maxWidth}
-                        maxHeight={settings.maxHeight}
-                        defaultWidth={settings.defaultWidth}
-                        defaultHeight={settings.defaultHeight}
+                        showSizeControls={activeSettings.allowCustomSize}
+                        showTexture={activeSettings.enableTexture ?? false}
+                        maxWidth={activeSettings.maxWidth}
+                        maxHeight={activeSettings.maxHeight}
+                        defaultWidth={activeSettings.defaultWidth}
+                        defaultHeight={activeSettings.defaultHeight}
                         language={language}
                         exceedsBuildVolume={exceedsBuildVolume}
                         highlightedSection={highlightedSection}
-                        limitToBuildVolume={settings.limitToBuildVolume}
+                        limitToBuildVolume={activeSettings.limitToBuildVolume}
                         sizeRestrictionWarning={sizeRestrictionWarning}
-                        lockRibDepth={settings.lockRibDepth ?? true}
-                        lockRibWidth={settings.lockRibWidth ?? true}
+                        lockRibDepth={activeSettings.lockRibDepth ?? true}
+                        lockRibWidth={activeSettings.lockRibWidth ?? true}
                         modelName={exportFileName}
                         onModelNameChange={handleFileNameChange}
                       />
@@ -2890,8 +2982,8 @@ export default function App() {
                     </div>
                     
                     <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#FFFBEB] p-0.5 py-2 space-y-2">
-                      {/* G-code Texture Option with Apply Texture button (only visible when activated in settings) */}
-                      {(settings.enableGcodeTexture ?? false) && (
+                      {/* G-code Texture Option with Apply Texture button (only visible when activated in settings and in Advanced Mode) */}
+                      {(isAdvancedMode && Boolean(settings.enableGcodeTexture)) && (
                         <GCodeTextureControls
                           params={params}
                           onApply={(textureParams) => {
@@ -3164,8 +3256,8 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Model Subsection 2 (.STL for 3D Printing) - controlled by Settings > Saving Options */}
-                      {Boolean(settings.enableStl3mfExport) && (
+                      {/* Model Subsection 2 (.STL for 3D Printing) - controlled by Settings > Saving Options and visible in Advanced Mode */}
+                      {(isAdvancedMode && Boolean(settings.enableStl3mfExport)) && (
                         <div 
                           id="subsec-save-model-stl-container" 
                           className={`rounded-xl p-2.5 pb-2 border-2 transition-all duration-300 relative ${
@@ -3355,108 +3447,112 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Technical Drawing Box Subsection */}
-                      <div 
-                        id="subsec-technical-drawing-container" 
-                        className="rounded-xl p-2.5 pb-2.5 border-2 bg-[#FAF8F5] border-blue-600 transition-all duration-300 relative mt-2.5"
-                      >
-                        <div className="text-[10px] font-black uppercase tracking-wider pb-1 border-b border-stone-200 flex items-center gap-1.5 text-blue-600">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                          {language === 'cy' ? 'Dyluniad Technegol' : 'Technical Drawing'}
+                      {/* Technical Drawing Box Subsection (Hidden in Basic Mode) */}
+                      {isAdvancedMode && (
+                        <div 
+                          id="subsec-technical-drawing-container" 
+                          className="rounded-xl p-2.5 pb-2.5 border-2 bg-[#FAF8F5] border-blue-600 transition-all duration-300 relative mt-2.5"
+                        >
+                          <div className="text-[10px] font-black uppercase tracking-wider pb-1 border-b border-stone-200 flex items-center gap-1.5 text-blue-600">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                            {language === 'cy' ? 'Dyluniad Technegol' : 'Technical Drawing'}
+                          </div>
+
+                          <div className="mt-2.5 space-y-2">
+                            {/* Designer Text Input */}
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[8px] font-black text-stone-500 uppercase tracking-widest">
+                                {language === 'cy' ? 'Cynllunydd' : 'Designer Name'}
+                              </span>
+                              <input
+                                type="text"
+                                value={techDrawingDesigner}
+                                onChange={(e) => setTechDrawingDesigner(e.target.value)}
+                                placeholder={language === 'cy' ? 'e.g. John Doe' : 'e.g. John Doe'}
+                                className="w-full text-[9px] h-7 bg-white border border-stone-300 rounded px-1.5 font-bold text-stone-700 focus:ring-blue-500 focus:border-blue-500 animate-none"
+                              />
+                            </div>
+
+                            {/* Export Format Selection */}
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[8px] font-black text-stone-500 uppercase tracking-widest">
+                                {language === 'cy' ? 'Fformat Allforio' : 'Export Format'}
+                              </span>
+                              <select
+                                value={techDrawingFormat}
+                                onChange={(e) => setTechDrawingFormat(e.target.value as 'jpeg' | 'png' | 'pdf' | 'svg')}
+                                className="w-full text-[9px] h-7 bg-white border border-stone-300 rounded px-1.5 font-bold text-stone-700 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+                              >
+                                <option value="jpeg">JPEG (.jpg)</option>
+                                <option value="png">PNG (.png)</option>
+                                <option value="pdf">PDF (.pdf)</option>
+                                <option value="svg">SVG (.svg)</option>
+                              </select>
+                            </div>
+
+                            {/* Preview & Export Grid */}
+                            <div className="grid grid-cols-2 gap-1.5 pt-1">
+                              <button 
+                                id="btn-preview-tech-drawing"
+                                onClick={() => {
+                                  const nextVal = !isTechDrawingActive;
+                                  setIsTechDrawingActive(nextVal);
+                                  setShowA4SheetIn3D(false); // Mutually exclusive
+                                }}
+                                className={`h-8 border rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                                  isTechDrawingActive 
+                                    ? 'bg-blue-50 border-blue-600 text-blue-700 font-extrabold shadow-inner' 
+                                    : 'bg-white hover:bg-stone-50 border-stone-300 text-stone-600'
+                                }`}
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                {isTechDrawingActive 
+                                  ? (language === 'cy' ? 'CUDDIO' : 'HIDE DRAWING')
+                                  : (language === 'cy' ? 'RHAGOLWG' : 'PREVIEW')}
+                              </button>
+
+                              <button 
+                                id="btn-save-tech-drawing"
+                                onClick={() => {
+                                  deactivateGridAndOthers();
+                                  window.dispatchEvent(new CustomEvent('export-picture', { 
+                                    detail: { 
+                                      fileName: exportFileName,
+                                      a4: true,
+                                      frame: true,
+                                      titleBox: true,
+                                      date: true,
+                                      views2D: true, // Forces composite drawing
+                                      grid: false,
+                                      basePlate: false,
+                                      axis: false,
+                                      buildVolume: false,
+                                      designer: techDrawingDesigner,
+                                      scale: 'Auto',
+                                      format: techDrawingFormat,
+                                      isPreview: false
+                                    } 
+                                  }));
+                                }}
+                                className="h-8 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-1 font-bold"
+                              >
+                                <Save className="w-3.5 h-3.5 text-white" />
+                                {language === 'cy' ? 'CADW' : 'EXPORT'}
+                              </button>
+                            </div>
+                          </div>
                         </div>
+                      )}
 
-                        <div className="mt-2.5 space-y-2">
-                          {/* Designer Text Input */}
-                          <div className="flex flex-col gap-1">
-                            <span className="text-[8px] font-black text-stone-500 uppercase tracking-widest">
-                              {language === 'cy' ? 'Cynllunydd' : 'Designer Name'}
-                            </span>
-                            <input
-                              type="text"
-                              value={techDrawingDesigner}
-                              onChange={(e) => setTechDrawingDesigner(e.target.value)}
-                              placeholder={language === 'cy' ? 'e.g. John Doe' : 'e.g. John Doe'}
-                              className="w-full text-[9px] h-7 bg-white border border-stone-300 rounded px-1.5 font-bold text-stone-700 focus:ring-blue-500 focus:border-blue-500 animate-none"
-                            />
-                          </div>
-
-                          {/* Export Format Selection */}
-                          <div className="flex flex-col gap-1">
-                            <span className="text-[8px] font-black text-stone-500 uppercase tracking-widest">
-                              {language === 'cy' ? 'Fformat Allforio' : 'Export Format'}
-                            </span>
-                            <select
-                              value={techDrawingFormat}
-                              onChange={(e) => setTechDrawingFormat(e.target.value as 'jpeg' | 'png' | 'pdf' | 'svg')}
-                              className="w-full text-[9px] h-7 bg-white border border-stone-300 rounded px-1.5 font-bold text-stone-700 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
-                            >
-                              <option value="jpeg">JPEG (.jpg)</option>
-                              <option value="png">PNG (.png)</option>
-                              <option value="pdf">PDF (.pdf)</option>
-                              <option value="svg">SVG (.svg)</option>
-                            </select>
-                          </div>
-
-                          {/* Preview & Export Grid */}
-                          <div className="grid grid-cols-2 gap-1.5 pt-1">
-                            <button 
-                              id="btn-preview-tech-drawing"
-                              onClick={() => {
-                                const nextVal = !isTechDrawingActive;
-                                setIsTechDrawingActive(nextVal);
-                                setShowA4SheetIn3D(false); // Mutually exclusive
-                              }}
-                              className={`h-8 border rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                                isTechDrawingActive 
-                                  ? 'bg-blue-50 border-blue-600 text-blue-700 font-extrabold shadow-inner' 
-                                  : 'bg-white hover:bg-stone-50 border-stone-300 text-stone-600'
-                              }`}
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                              {isTechDrawingActive 
-                                ? (language === 'cy' ? 'CUDDIO' : 'HIDE DRAWING')
-                                : (language === 'cy' ? 'RHAGOLWG' : 'PREVIEW')}
-                            </button>
-
-                            <button 
-                              id="btn-save-tech-drawing"
-                              onClick={() => {
-                                deactivateGridAndOthers();
-                                window.dispatchEvent(new CustomEvent('export-picture', { 
-                                  detail: { 
-                                    fileName: exportFileName,
-                                    a4: true,
-                                    frame: true,
-                                    titleBox: true,
-                                    date: true,
-                                    views2D: true, // Forces composite drawing
-                                    grid: false,
-                                    basePlate: false,
-                                    axis: false,
-                                    buildVolume: false,
-                                    designer: techDrawingDesigner,
-                                    scale: 'Auto',
-                                    format: techDrawingFormat,
-                                    isPreview: false
-                                  } 
-                                }));
-                              }}
-                              className="h-8 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-1 font-bold"
-                            >
-                              <Save className="w-3.5 h-3.5 text-white" />
-                              {language === 'cy' ? 'CADW' : 'EXPORT'}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Test Flow Calibration File Subsection */}
-                      <PrintFlowTestSection
-                        settings={settings}
-                        language={language}
-                        highlightedSection={highlightedSection}
-                        onUpdateSettings={(newSettings) => setSettings((prev) => ({ ...prev, ...newSettings }))}
-                      />
+                      {/* Test Flow Calibration File Subsection (Hidden in Basic Mode) */}
+                      {isAdvancedMode && (
+                        <PrintFlowTestSection
+                          settings={settings}
+                          language={language}
+                          highlightedSection={highlightedSection}
+                          onUpdateSettings={(newSettings) => setSettings((prev) => ({ ...prev, ...newSettings }))}
+                        />
+                      )}
                     </div>
                   </div>
                 )}
@@ -3471,7 +3567,7 @@ export default function App() {
             <div className="flex-1 relative overflow-hidden bg-transparent">
               <ModelViewer 
                 params={deferredParams} 
-                settings={settings} 
+                settings={activeSettings} 
                 gcode={isVisualLoading ? '' : gcode} 
                 mode={(activeTab === 'gcode' && !isVisualLoading) ? 'gcode' : 'model'} 
                 activeTab={activeTab}
@@ -4159,6 +4255,7 @@ export default function App() {
         onSuccess={handleSettingsAuthSuccess}
         language={language}
         gracePeriodMinutes={SETTINGS_ACCESS_GRACE_PERIOD_MINUTES}
+        mode={authModalMode}
       />
 
       <AboutAppModal

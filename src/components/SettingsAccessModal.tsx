@@ -9,6 +9,7 @@ interface SettingsAccessModalProps {
   onSuccess: () => void;
   language: 'en' | 'cy';
   gracePeriodMinutes?: number;
+  mode?: 'settings' | 'advanced';
 }
 
 export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
@@ -17,6 +18,7 @@ export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
   onSuccess,
   language,
   gracePeriodMinutes = SETTINGS_ACCESS_GRACE_PERIOD_MINUTES,
+  mode = 'settings',
 }) => {
   const [code, setCode] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -150,7 +152,7 @@ export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
               bounce: 0.15,
               x: { duration: 0.4 },
             }}
-            className="relative w-full max-w-sm sm:max-w-md bg-[#FAF8F5] border-2 border-stone-300 rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col text-stone-800 my-auto font-sans"
+            className={`relative w-full ${mode === 'advanced' ? 'max-w-md sm:max-w-xl' : 'max-w-sm sm:max-w-md'} bg-[#FAF8F5] border-2 border-stone-300 rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col text-stone-800 my-auto font-sans`}
           >
             {/* Header: Dark Charcoal Slate matching the app's Settings header style */}
             <div className="flex items-center justify-between px-5 sm:px-6 py-4 bg-[#2E2E35] text-white shrink-0 shadow-sm font-sans">
@@ -171,13 +173,15 @@ export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
                 <div>
                   <h2 className="text-base sm:text-lg font-bold tracking-normal leading-tight text-white font-sans flex items-center gap-2">
                     <span>
-                      {language === 'cy' ? 'Cod Mynediad Gosodiadau' : 'Settings Access Code'}
+                      {mode === 'advanced'
+                        ? (language === 'cy' ? 'Cod Mynediad Modd Uwch' : 'Advanced Mode Access Code')
+                        : (language === 'cy' ? 'Cod Mynediad Gosodiadau' : 'Settings Access Code')}
                     </span>
                   </h2>
                   <p className="text-xs sm:text-sm text-stone-300 font-normal leading-tight mt-0.5 font-sans">
-                    {language === 'cy'
-                      ? "Rhowch y cod 4 digid i ddatgloi'r gosodiadau"
-                      : 'Enter the 4-digit code to unlock settings'}
+                    {mode === 'advanced'
+                      ? (language === 'cy' ? "Rhowch y cod 4 digid i ddatgloi'r Modd Uwch" : 'Enter the 4-digit code to unlock Advanced Mode')
+                      : (language === 'cy' ? "Rhowch y cod 4 digid i ddatgloi'r gosodiadau" : 'Enter the 4-digit code to unlock settings')}
                   </p>
                 </div>
               </div>
@@ -200,7 +204,9 @@ export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                     <h3 className="text-[13px] font-bold uppercase tracking-wider text-stone-800 font-sans">
-                      {language === 'cy' ? 'Diogelwch Gosodiadau' : 'Settings Security'}
+                      {mode === 'advanced'
+                        ? (language === 'cy' ? 'Cyfyngiad Modd Uwch' : 'Advanced Mode Restriction')
+                        : (language === 'cy' ? 'Diogelwch Gosodiadau' : 'Settings Security')}
                     </h3>
                   </div>
                   <span className="text-[11.5px] font-semibold text-stone-400 font-sans">
@@ -208,11 +214,26 @@ export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
                   </span>
                 </div>
 
-                <p className="text-[13px] leading-[20px] text-stone-600 font-sans">
-                  {language === 'cy'
-                    ? "Rhowch y cod mynediad 4 digid i gael mynediad i osodiadau'r argraffydd."
-                    : 'Enter the 4-digit access code to access printer settings.'}
-                </p>
+                {mode === 'advanced' ? (
+                  <div className="space-y-2.5 text-[12.5px] leading-[19px] text-stone-600 font-sans">
+                    <p>
+                      {language === 'cy'
+                        ? "Mae Mynediad i'r Modd Uwch wedi'i gyfyngu i ysgolion sy'n cymryd rhan yn y Prosiect Argraffu Spirulina 3D. Mae'r Modd Uwch yn darparu mwy o reolaeth dros baramedrau argraffu 3D, mynediad i osodiadau allforio, ac adnoddau ychwanegol, gan gynnwys canllawiau fformiwleiddio past, gweithdrefnau manwl, fideos cyfarwyddiadol, a dogfennaeth ategol arall."
+                        : 'Access to Advanced Mode is restricted to schools participating in the 3D Printing Spirulina Project. Advanced Mode provides greater control over 3D printing parameters, access to export settings, and additional resources, including paste formulation guidelines, detailed procedures, instructional videos, and other supporting documentation.'}
+                    </p>
+                    <p className="text-stone-700 font-semibold bg-amber-50/80 border border-amber-200/80 rounded-xl p-2.5">
+                      {language === 'cy'
+                        ? "Os hoffech gael mynediad i'r Modd Uwch neu os oes angen rhagor o wybodaeth arnoch, cysylltwch â gweinyddwyr yr ap trwy glicio ar y botwm Gwybodaeth (i) a chwblhau'r ffurflen gyswllt ar-lein."
+                        : 'If you would like access to Advanced Mode or require further information, please contact the app administrators by clicking the Info (i) button and completing the online contact form.'}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-[13px] leading-[20px] text-stone-600 font-sans">
+                    {language === 'cy'
+                      ? "Rhowch y cod mynediad 4 digid i gael mynediad i osodiadau'r argraffydd."
+                      : 'Enter the 4-digit access code to access printer settings.'}
+                  </p>
+                )}
 
                 {/* Hidden Input for Keyboard Typing */}
                 <input
@@ -311,9 +332,13 @@ export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
                 <div className="flex items-start gap-2 pt-2 border-t border-stone-100 text-[11.5px] leading-tight text-stone-500 font-sans">
                   <Clock className="w-3.5 h-3.5 text-stone-400 shrink-0 mt-0.5" />
                   <span>
-                    {language === 'cy'
-                      ? `Ar ôl nodi cod dilys, gallwch ail-agor y gosodiadau am ${gracePeriodMinutes} munud heb ail-nodi'r cod.`
-                      : `After entering a valid code, you can re-enter settings for ${gracePeriodMinutes} minutes without re-entering the code.`}
+                    {mode === 'advanced'
+                      ? (language === 'cy'
+                        ? `Ar ôl nodi cod dilys, bydd y Modd Uwch a'r holl nodweddion estynedig yn cael eu datgloi am ${gracePeriodMinutes} munud.`
+                        : `After entering a valid code, Advanced Mode and all extended features are unlocked for ${gracePeriodMinutes} minutes.`)
+                      : (language === 'cy'
+                        ? `Ar ôl nodi cod dilys, gallwch ail-agor y gosodiadau am ${gracePeriodMinutes} munud heb ail-nodi'r cod.`
+                        : `After entering a valid code, you can re-enter settings for ${gracePeriodMinutes} minutes without re-entering the code.`)}
                   </span>
                 </div>
               </div>
@@ -337,7 +362,13 @@ export const SettingsAccessModal: React.FC<SettingsAccessModalProps> = ({
                   ) : (
                     <Unlock className="w-4 h-4 text-amber-300" />
                   )}
-                  <span>{language === 'cy' ? 'Datgloi' : 'Unlock'}</span>
+                  <span>
+                    {isSuccess
+                      ? (language === 'cy' ? 'Datgloiwyd!' : 'Unlocked!')
+                      : mode === 'advanced'
+                      ? (language === 'cy' ? 'Datgloi Modd Uwch' : 'Unlock Advanced Mode')
+                      : (language === 'cy' ? 'Datgloi' : 'Unlock')}
+                  </span>
                 </button>
               </div>
 
