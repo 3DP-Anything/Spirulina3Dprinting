@@ -63,12 +63,12 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   const isExpanded = Boolean(expandedMap[item.path]);
   const fileUrl = !isFolder ? getPdfUrl(item.path) : '#';
 
-  // Count files inside folder recursively
+  // Count files inside folder recursively (only .pdf)
   const fileCount = useMemo(() => {
     if (!isFolder) return 0;
     let count = 0;
     function countItems(node: PdfItem) {
-      if (node.type === 'file') count++;
+      if (node.type === 'file' && node.name.toLowerCase().endsWith('.pdf')) count++;
       if (node.children) node.children.forEach(countItems);
     }
     countItems(item);
@@ -92,6 +92,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
     return false;
   }, [item, isFolder, searchQuery]);
 
+  if (!isFolder && !item.name.toLowerCase().endsWith('.pdf')) return null;
   if (!matchesSearch) return null;
 
   return (
@@ -333,12 +334,12 @@ export const PdfExplorerModal: React.FC<PdfExplorerModalProps> = ({
     setExpandedMap({ '': true });
   };
 
-  // Total files count across the tree
+  // Total files count across the tree (only .pdf)
   const totalFiles = useMemo(() => {
     if (!rootItem) return 0;
     let count = 0;
     function countFiles(node: PdfItem) {
-      if (node.type === 'file') count++;
+      if (node.type === 'file' && node.name.toLowerCase().endsWith('.pdf')) count++;
       if (node.children) node.children.forEach(countFiles);
     }
     countFiles(rootItem);

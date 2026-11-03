@@ -35,12 +35,29 @@ export default defineConfig(({mode}) => {
             }
           }
 
+          function cleanRemoved(src: string, dst: string) {
+            if (!fs.existsSync(dst) || !fs.existsSync(src)) return;
+            const entries = fs.readdirSync(dst, { withFileTypes: true });
+            for (const entry of entries) {
+              if (entry.name === 'manifest.json' || entry.name === '.gitkeep') continue;
+              const s = path.join(src, entry.name);
+              const d = path.join(dst, entry.name);
+              if (!fs.existsSync(s)) {
+                if (entry.isDirectory()) {
+                  fs.rmSync(d, { recursive: true, force: true });
+                } else {
+                  fs.unlinkSync(d);
+                }
+              } else if (entry.isDirectory()) {
+                cleanRemoved(s, d);
+              }
+            }
+          }
+
           function syncPdfDirectories() {
             if (fs.existsSync(rootPdfDir) && fs.existsSync(publicPdfDir)) {
-              // Copy from root to public
+              cleanRemoved(rootPdfDir, publicPdfDir);
               mirrorDir(rootPdfDir, publicPdfDir);
-              // Copy from public to root (if user added directly to public)
-              mirrorDir(publicPdfDir, rootPdfDir);
             } else if (fs.existsSync(rootPdfDir)) {
               fs.cpSync(rootPdfDir, publicPdfDir, { recursive: true });
             } else if (fs.existsSync(publicPdfDir)) {
@@ -65,6 +82,7 @@ export default defineConfig(({mode}) => {
                   children: subTree?.children || [],
                 });
               } else if (entry.isFile()) {
+                if (!entry.name.toLowerCase().endsWith('.pdf')) continue;
                 const stats = fs.statSync(fullPath);
                 children.push({
                   name: entry.name,
@@ -114,10 +132,29 @@ export default defineConfig(({mode}) => {
             }
           }
 
+          function cleanRemoved(src: string, dst: string) {
+            if (!fs.existsSync(dst) || !fs.existsSync(src)) return;
+            const entries = fs.readdirSync(dst, { withFileTypes: true });
+            for (const entry of entries) {
+              if (entry.name === 'manifest.json' || entry.name === '.gitkeep') continue;
+              const s = path.join(src, entry.name);
+              const d = path.join(dst, entry.name);
+              if (!fs.existsSync(s)) {
+                if (entry.isDirectory()) {
+                  fs.rmSync(d, { recursive: true, force: true });
+                } else {
+                  fs.unlinkSync(d);
+                }
+              } else if (entry.isDirectory()) {
+                cleanRemoved(s, d);
+              }
+            }
+          }
+
           function syncPdfDirectories() {
             if (fs.existsSync(rootPdfDir) && fs.existsSync(publicPdfDir)) {
+              cleanRemoved(rootPdfDir, publicPdfDir);
               mirrorDir(rootPdfDir, publicPdfDir);
-              mirrorDir(publicPdfDir, rootPdfDir);
             } else if (fs.existsSync(rootPdfDir)) {
               fs.cpSync(rootPdfDir, publicPdfDir, { recursive: true });
             } else if (fs.existsSync(publicPdfDir)) {
@@ -142,6 +179,7 @@ export default defineConfig(({mode}) => {
                   children: subTree?.children || [],
                 });
               } else if (entry.isFile()) {
+                if (!entry.name.toLowerCase().endsWith('.pdf')) continue;
                 const stats = fs.statSync(fullPath);
                 children.push({
                   name: entry.name,
